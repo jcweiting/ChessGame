@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 
 class GameBoard: View {
 
-    private var mPoints: Array<Array<Point?>> = Array(11) { Array(11) { null } }
+    private var mPoints: ArrayList<ArrayList<Point?>> = ArrayList()
     private var screenWidth = 0f        //螢幕寬度
     private var screenHeight = 0f       //螢幕高度
     private var dotRadius = 0           //外圓半徑
@@ -47,12 +47,16 @@ class GameBoard: View {
 
         var count = 0
 
-        for (i in 0.. 10){
-            for (j in 0 .. 10){
+        mPoints.clear()
+        for (i in 0..10){
+            val row = ArrayList<Point?>()   //創建一個新的行
+            for (j in 0..10){
                 count++
-                mPoints[i][j] = Point(screenWidth/10 * x, screenHeight/10 * y, count)
+                val point = Point(screenWidth/10 * j, screenHeight/10 * i, count)
+                row.add(point)
                 GameLog.i("i = $i ; j = $j ; count = $count")
             }
+            mPoints.add(row)
         }
     }
 
