@@ -4,18 +4,24 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
+import com.google.gson.Gson
+import kotlin.math.hypot
 
 class GameBoard: View {
 
     private var mPoints: ArrayList<ArrayList<Point?>> = ArrayList()
+    private var mStonesBlack: ArrayList<Point> = ArrayList()
+    private var mStonesWhite: ArrayList<Point> = ArrayList()
     private var screenWidth = 0f        //螢幕寬度
     private var screenHeight = 0f       //螢幕高度
     private var dotRadius = 0           //外圓半徑
 
     //畫筆
     private lateinit var mNormalPaint: Paint
+    private lateinit var mStonePaint: Paint
 
     //畫筆顏色
     private val mNormalColor = ContextCompat.getColor(context, R.color.black)
@@ -30,18 +36,39 @@ class GameBoard: View {
         initPaint()
         initGameBoard()
         drawShow(canvas)
+        drawStone(canvas)
+    }
+
+    /**畫棋子*/
+    private fun drawStone(canvas: Canvas?) {
+        for (stone in mStonesBlack){
+            canvas?.drawCircle(stone.centerX, stone.centerY, dotRadius.toFloat(), mStonePaint)
+        }
     }
 
     /**畫筆預設值*/
     private fun initPaint() {
-        mNormalPaint = Paint()
-        mNormalPaint.color = mNormalColor
-        mNormalPaint.isAntiAlias = true             //是否抗鋸齒
-        mNormalPaint.style = Paint.Style.STROKE     //樣式：Stroke 描邊; Fill 填充; Fill and Stroke 描邊加填充
-        mNormalPaint.strokeWidth = 5f               //寬度
+        //棋盤格線
+        mNormalPaint = Paint().apply {
+            color = mNormalColor
+            isAntiAlias = true             //是否抗鋸齒
+            style = Paint.Style.STROKE     //樣式：Stroke 描邊; Fill 填充; Fill and Stroke 描邊加填充
+            strokeWidth = 5f               //寬度
+        }
+
+        //黑子
+        mStonePaint = Paint().apply {
+            color = mNormalColor
+            isAntiAlias = true
+            style = Paint.Style.FILL
+        }
+
+        //白子
+        //TODO: 白子樣式
     }
 
     private fun initGameBoard() {
+        GameLog.i("初始化棋盤")
         val squareWidth = width / 10    //每個方格的大小
         dotRadius = squareWidth / 4     //中心點座標
 
@@ -54,7 +81,6 @@ class GameBoard: View {
                 count++
                 val point = Point(screenWidth/10 * j, screenHeight/10 * i, count)
                 row.add(point)
-                GameLog.i("i = $i ; j = $j ; count = $count")
             }
             mPoints.add(row)
         }
@@ -89,4 +115,46 @@ class GameBoard: View {
         setMeasuredDimension(size, size)
     }
 
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (event?.action == MotionEvent.ACTION_DOWN){
+            val x = event.x     //取得觸摸的x座標
+            val y = event.y     //取得觸摸的y座標
+            handleTouch(x, y)
+        }
+        return true
+    }
+
+    private fun handleTouch(x: Float, y: Float) {
+        val nearestPoint = findNearestPoint(x, y)
+        nearestPoint?.let {
+            placeStone(it)
+        }
+    }
+
+    /**放置旗棋子*/
+    private fun placeStone(point: Point) {
+        GameLog.i("棋子座標 = ${Gson().toJson(point)}")
+        mStonesBlack.add(point)  //將棋子座標加到列表中
+        invalidate()        //重繪視圖
+    }
+
+    /**找到最近的交界點*/
+    private fun findNearestPoint(x: Float, y: Float): Point? {
+        var minDistance = Float.MAX_VALUE
+        var nearestPoint: Point? = null
+        for (row in mPoints){
+            for (point in row){
+                point?.let {
+                    //計算點到觸摸位置的距離
+                    val distance = hypot((it.centerX - x).toDouble(), (it.centerY - y).toDouble()).toFloat()
+
+                    if (distance < minDistance){    //如果這個距離小於之前的最小距離
+                        minDistance = distance      //更新最小距離
+                        nearestPoint = it           //更新最近的點
+                    }
+                }
+            }
+        }
+        return nearestPoint
+    }
 }
