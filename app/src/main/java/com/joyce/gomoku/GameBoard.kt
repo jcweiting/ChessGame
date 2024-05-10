@@ -1,7 +1,9 @@
 package com.joyce.gomoku
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -13,13 +15,13 @@ import kotlin.math.hypot
 class GameBoard: View {
 
     private var mPoints: ArrayList<ArrayList<Point?>> = ArrayList()
-    private var mStonesBlack: ArrayList<Point> = ArrayList()
-    private var mStonesWhite: ArrayList<Point> = ArrayList()
+    private var mStonesArr: ArrayList<ChessPoint> = ArrayList()
+    private var listener: OnGameBoardListener? = null
+    private var gameBoardCells = 10
     private var screenWidth = 0f        //螢幕寬度
     private var screenHeight = 0f       //螢幕高度
     private var dotRadius = 0           //外圓半徑
-    private var listener: OnGameBoardListener? = null
-    private var gameBoardCells = 10
+    private var isBlackChess = true     //true:黑子, false:白子
 
     fun setGameBoardListener(listener: OnGameBoardListener){
         this.listener = listener
@@ -27,7 +29,8 @@ class GameBoard: View {
 
     //畫筆
     private lateinit var mNormalPaint: Paint
-    private lateinit var mStonePaint: Paint
+    private lateinit var mStonePaintBlack: Paint
+    private lateinit var mStonePaintWhite: Paint
 
     //畫筆顏色
     private val mNormalColor = ContextCompat.getColor(context, R.color.black)
@@ -47,12 +50,17 @@ class GameBoard: View {
 
     /**畫棋子*/
     private fun drawStone(canvas: Canvas?) {
-        for (stone in mStonesBlack){
-            canvas?.drawCircle(stone.centerX, stone.centerY, dotRadius.toFloat(), mStonePaint)
+        for (stone in mStonesArr){
+            if (stone.isBlackChess){
+                canvas?.drawCircle(stone.centerX, stone.centerY, dotRadius.toFloat(), mStonePaintBlack)
+            } else {
+                canvas?.drawCircle(stone.centerX, stone.centerY, dotRadius.toFloat(), mStonePaintWhite)
+            }
         }
     }
 
     /**畫筆預設值*/
+    @SuppressLint("ResourceType")
     private fun initPaint() {
         //棋盤格線
         mNormalPaint = Paint().apply {
@@ -63,19 +71,22 @@ class GameBoard: View {
         }
 
         //黑子
-        mStonePaint = Paint().apply {
+        mStonePaintBlack = Paint().apply {
             color = mNormalColor
             isAntiAlias = true
             style = Paint.Style.FILL
         }
 
         //白子
-        //TODO: 白子樣式
+        mStonePaintWhite = Paint().apply {
+            color = ContextCompat.getColor(context, R.color.white)
+            isAntiAlias = true
+            style = Paint.Style.FILL
+        }
     }
 
     private fun initGameBoard() {
-        GameLog.i("初始化棋盤")
-        val squareWidth = width / 10    //每個方格的大小
+        val squareWidth = width / gameBoardCells    //每個方格的大小
         dotRadius = squareWidth / 4     //中心點座標
 
         var count = 0
@@ -85,7 +96,7 @@ class GameBoard: View {
             val row = ArrayList<Point?>()   //創建一個新的行
             for (j in 0..10){
                 count++
-                val point = Point(screenWidth/10 * j, screenHeight/10 * i, count)
+                val point = Point(screenWidth/gameBoardCells * j, screenHeight/gameBoardCells * i, count)
                 row.add(point)
             }
             mPoints.add(row)
@@ -94,13 +105,13 @@ class GameBoard: View {
 
     private fun drawShow(canvas: Canvas?) {
         //棋盤格線(直線)
-        for (i in 0 .. 10){
-            canvas?.drawLine(screenWidth/10*i, 0f, screenWidth/10*i, screenHeight, mNormalPaint)
+        for (i in 0 .. gameBoardCells){
+            canvas?.drawLine(screenWidth/gameBoardCells*i, 0f, screenWidth/gameBoardCells*i, screenHeight, mNormalPaint)
         }
 
         //棋盤格線(橫線)
-        for (j in 0 .. 10){
-            canvas?.drawLine(0f, screenHeight/10*j, screenWidth, screenHeight/10*j, mNormalPaint)
+        for (j in 0 .. gameBoardCells){
+            canvas?.drawLine(0f, screenHeight/gameBoardCells*j, screenWidth, screenHeight/gameBoardCells*j, mNormalPaint)
         }
     }
 
@@ -135,8 +146,6 @@ class GameBoard: View {
 
     /**是否在邊界內*/
     private fun isWithinBounds(x: Float, y: Float): Boolean {
-        GameLog.i("x = $x , y = $y , width = $width , height = $height")
-
         val eachHalfWidth = width / gameBoardCells / 2     //半格的寬度
         val checkX = !(x <= eachHalfWidth || x >= width - eachHalfWidth)
 
@@ -158,41 +167,30 @@ class GameBoard: View {
     }
 
     /**確認是否有相同座標*/
-    private fun checkIfSamePosition(nearestPoint: Point): Boolean{
-        GameLog.i("nearestPoint = ${Gson().toJson(nearestPoint)}")
-        GameLog.i("已下過棋的座標 = ${Gson().toJson(mStonesBlack)}")
-
+    private fun checkIfSamePosition(nearestPoint: ChessPoint): Boolean{
         var isSamePosition = false
-
-        for (mStone in mStonesBlack){
+        for (mStone in mStonesArr){
             if (mStone.centerX == nearestPoint.centerX && mStone.centerY == nearestPoint.centerY){
                 isSamePosition = true
                 break
             }
         }
-
-        for (mStone in mStonesWhite){
-            if (mStone.centerX == nearestPoint.centerX && mStone.centerY == nearestPoint.centerY){
-                isSamePosition = true
-                break
-            }
-        }
-
-        GameLog.i("isSamePosition = $isSamePosition")
         return isSamePosition
     }
 
     /**放置旗棋子*/
-    private fun placeStone(point: Point) {
+    private fun placeStone(point: ChessPoint) {
         GameLog.i("棋子座標 = ${Gson().toJson(point)}")
-        mStonesBlack.add(point)  //將棋子座標加到列表中
-        invalidate()        //重繪視圖
+        mStonesArr.add(point)           //將棋子座標加到列表中
+        isBlackChess = !isBlackChess    //儲存落子之後換玩家
+        invalidate()                    //重繪視圖
     }
 
     /**找到最近的交界點*/
-    private fun findNearestPoint(x: Float, y: Float): Point? {
+    private fun findNearestPoint(x: Float, y: Float): ChessPoint? {
         var minDistance = Float.MAX_VALUE
-        var nearestPoint: Point? = null
+        var nearestPoint: ChessPoint? = null
+
         for (row in mPoints){
             for (point in row){
                 point?.let {
@@ -201,7 +199,7 @@ class GameBoard: View {
 
                     if (distance < minDistance){    //如果這個距離小於之前的最小距離
                         minDistance = distance      //更新最小距離
-                        nearestPoint = it           //更新最近的點
+                        nearestPoint = ChessPoint(isBlackChess, it.centerX, it.centerY)   //更新最近的點
                     }
                 }
             }
@@ -210,9 +208,7 @@ class GameBoard: View {
     }
 
     fun onClearGameBoard(){
-        GameLog.i("啟動 重新開始")
-        mStonesBlack.clear()
-        mStonesWhite.clear()
+        mStonesArr.clear()
         invalidate()
     }
 

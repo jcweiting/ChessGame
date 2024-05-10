@@ -1,6 +1,6 @@
 package com.joyce.gomoku
 
-class Point (var centerX: Float, var centerY: Float, var index: Int){
+class Point(var centerX: Float, var centerY: Float, var index: Int){
 
     //默認狀態
     var status = PointStatus.NORMAL
@@ -8,6 +8,9 @@ class Point (var centerX: Float, var centerY: Float, var index: Int){
     fun setStatusNormal(){
         status = PointStatus.NORMAL
     }
+}
+
+class ChessPoint(var isBlackChess: Boolean, var centerX: Float, var centerY: Float){
 
 }
 

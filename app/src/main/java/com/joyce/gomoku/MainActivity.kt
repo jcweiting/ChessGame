@@ -1,9 +1,8 @@
 package com.joyce.gomoku
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.joyce.gomoku.databinding.ActivityMainBinding
 
