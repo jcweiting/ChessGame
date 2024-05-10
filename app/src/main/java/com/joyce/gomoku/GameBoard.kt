@@ -18,6 +18,12 @@ class GameBoard: View {
     private var screenWidth = 0f        //螢幕寬度
     private var screenHeight = 0f       //螢幕高度
     private var dotRadius = 0           //外圓半徑
+    private var listener: OnGameBoardListener? = null
+    private var gameBoardCells = 10
+
+    fun setGameBoardListener(listener: OnGameBoardListener){
+        this.listener = listener
+    }
 
     //畫筆
     private lateinit var mNormalPaint: Paint
@@ -119,16 +125,61 @@ class GameBoard: View {
         if (event?.action == MotionEvent.ACTION_DOWN){
             val x = event.x     //取得觸摸的x座標
             val y = event.y     //取得觸摸的y座標
-            handleTouch(x, y)
+
+            if (isWithinBounds(x, y)){
+                handleTouch(x, y)
+            }
         }
         return true
     }
 
+    /**是否在邊界內*/
+    private fun isWithinBounds(x: Float, y: Float): Boolean {
+        GameLog.i("x = $x , y = $y , width = $width , height = $height")
+
+        val eachHalfWidth = width / gameBoardCells / 2     //半格的寬度
+        val checkX = !(x <= eachHalfWidth || x >= width - eachHalfWidth)
+
+        val eachHalfHeight = height / gameBoardCells / 2   //半格的高度
+        val checkY = !(y <= eachHalfHeight || y >= (height - eachHalfHeight))
+
+        GameLog.i("checkX = $checkX , checkY = $checkY")
+        return !(!checkX || !checkY)
+    }
+
     private fun handleTouch(x: Float, y: Float) {
         val nearestPoint = findNearestPoint(x, y)
+
         nearestPoint?.let {
-            placeStone(it)
+            if (!checkIfSamePosition(it)){
+                placeStone(it)
+            }
         }
+    }
+
+    /**確認是否有相同座標*/
+    private fun checkIfSamePosition(nearestPoint: Point): Boolean{
+        GameLog.i("nearestPoint = ${Gson().toJson(nearestPoint)}")
+        GameLog.i("已下過棋的座標 = ${Gson().toJson(mStonesBlack)}")
+
+        var isSamePosition = false
+
+        for (mStone in mStonesBlack){
+            if (mStone.centerX == nearestPoint.centerX && mStone.centerY == nearestPoint.centerY){
+                isSamePosition = true
+                break
+            }
+        }
+
+        for (mStone in mStonesWhite){
+            if (mStone.centerX == nearestPoint.centerX && mStone.centerY == nearestPoint.centerY){
+                isSamePosition = true
+                break
+            }
+        }
+
+        GameLog.i("isSamePosition = $isSamePosition")
+        return isSamePosition
     }
 
     /**放置旗棋子*/
@@ -156,5 +207,15 @@ class GameBoard: View {
             }
         }
         return nearestPoint
+    }
+
+    fun onClearGameBoard(){
+        GameLog.i("啟動 重新開始")
+        mStonesBlack.clear()
+        mStonesWhite.clear()
+        invalidate()
+    }
+
+    interface OnGameBoardListener{
     }
 }
