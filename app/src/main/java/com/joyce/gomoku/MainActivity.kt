@@ -24,7 +24,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun gameBoardListener() {
         binding.gameBoard.setGameBoardListener(object : GameBoard.OnGameBoardListener{
-
+            override fun onChangePlayer(isBlackChess: Boolean) {
+                binding.tvPlayer.text = if (isBlackChess) getString(R.string.player1) else getString(R.string.player2)
+            }
         })
     }
 

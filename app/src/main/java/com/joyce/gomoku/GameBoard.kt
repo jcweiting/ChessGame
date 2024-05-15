@@ -3,7 +3,6 @@ package com.joyce.gomoku
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -183,22 +182,20 @@ class GameBoard: View {
         GameLog.i("棋子座標 = ${Gson().toJson(point)}")
         mStonesArr.add(point)           //將棋子座標加到列表中
         isBlackChess = !isBlackChess    //儲存落子之後換玩家
+        listener?.onChangePlayer(isBlackChess)
         invalidate()                    //重繪視圖
     }
 
     /**找到最近的交界點*/
     private fun findNearestPoint(x: Float, y: Float): ChessPoint? {
-        var minDistance = Float.MAX_VALUE
+        val minDistance = width / gameBoardCells / 2    //每一格的半徑
         var nearestPoint: ChessPoint? = null
 
         for (row in mPoints){
             for (point in row){
                 point?.let {
-                    //計算點到觸摸位置的距離
-                    val distance = hypot((it.centerX - x).toDouble(), (it.centerY - y).toDouble()).toFloat()
-
+                    val distance = hypot((it.centerX - x).toDouble(), (it.centerY - y).toDouble()).toFloat()    //計算點到觸摸位置的距離
                     if (distance < minDistance){    //如果這個距離小於之前的最小距離
-                        minDistance = distance      //更新最小距離
                         nearestPoint = ChessPoint(isBlackChess, it.centerX, it.centerY)   //更新最近的點
                     }
                 }
@@ -213,5 +210,6 @@ class GameBoard: View {
     }
 
     interface OnGameBoardListener{
+        fun onChangePlayer(isBlackChess: Boolean)
     }
 }
