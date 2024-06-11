@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Gomoku</string>
     <string name="restart">重新開始</string>
+    <string name="win">Win!</string>
     <string name="player1">玩家1 (黑子)</string>
     <string name="player2">玩家2 (白子)</string>
 </resources>

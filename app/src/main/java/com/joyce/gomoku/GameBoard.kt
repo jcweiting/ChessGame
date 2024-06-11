@@ -181,9 +181,78 @@ class GameBoard: View {
     private fun placeStone(point: ChessPoint) {
         GameLog.i("棋子座標 = ${Gson().toJson(point)}")
         mStonesArr.add(point)           //將棋子座標加到列表中
+
+        if (checkConnectInLine()){
+            listener?.onConnectInLine(isBlackChess)
+        } else {
+            updateGameBoard()
+        }
+    }
+
+    private fun updateGameBoard(){
         isBlackChess = !isBlackChess    //儲存落子之後換玩家
         listener?.onChangePlayer(isBlackChess)
         invalidate()                    //重繪視圖
+    }
+
+    /**確認連線*/
+    private fun checkConnectInLine(): Boolean {
+        var blackInLine = false
+        var whiteInLine = false
+        val whiteChessArr = ArrayList<ChessPoint>()
+        val blackChessArr = ArrayList<ChessPoint>()
+
+        //把黑白棋arr分開
+        for (stones in mStonesArr){
+            if (stones.isBlackChess){
+                blackChessArr.add(stones)
+            } else {
+                whiteChessArr.add(stones)
+            }
+        }
+
+        when(isBlackChess){
+            //比對黑棋
+            true -> blackInLine = if (blackChessArr.size < 5) false else isChessArrConnectInLine(blackChessArr)
+            //比對白棋
+            false -> whiteInLine = if (whiteChessArr.size < 5) false else isChessArrConnectInLine(whiteChessArr)
+        }
+
+        return blackInLine || whiteInLine
+    }
+
+    private fun isChessArrConnectInLine(chessArray: ArrayList<ChessPoint>): Boolean{
+        GameLog.i("chessArr = ${Gson().toJson(chessArray)}")
+        var isInLine = false
+
+        val blackChessArr = ArrayList<ChessPoint>()
+        val whiteChessArr = ArrayList<ChessPoint>()
+
+        for (chess in chessArray){
+            when(chess.isBlackChess){
+                true -> blackChessArr.add(chess)
+                false -> whiteChessArr.add(chess)
+            }
+        }
+
+        for (i in 0 until blackChessArr.size){
+            if (i != blackChessArr[i].centerX == blackChessArr[i].centerX)
+        }
+
+//        for (chess in chessArray){
+//
+//            //1.都是直線
+//
+//
+//            //2.都是橫線
+//
+//
+//            //3.斜線
+//
+//
+//        }
+
+        return isInLine
     }
 
     /**找到最近的交界點*/
@@ -211,5 +280,6 @@ class GameBoard: View {
 
     interface OnGameBoardListener{
         fun onChangePlayer(isBlackChess: Boolean)
+        fun onConnectInLine(isBlackChess: Boolean)
     }
 }

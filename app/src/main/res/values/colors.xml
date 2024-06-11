@@ -2,6 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="red">#FD0000</color>
     <color name="game_board_background">#956E61</color>
 
 </resources>
