@@ -9,6 +9,7 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
+import kotlin.math.abs
 import kotlin.math.hypot
 
 class GameBoard: View {
@@ -21,6 +22,9 @@ class GameBoard: View {
     private var screenHeight = 0f       //螢幕高度
     private var dotRadius = 0           //外圓半徑
     private var isBlackChess = true     //true:黑子, false:白子
+    private var eachHalfWidth = 0
+    private var eachHalfHeight = 0
+    private var avgSpaceDifferent = 0.0f //每一格的間距
 
     fun setGameBoardListener(listener: OnGameBoardListener){
         this.listener = listener
@@ -90,6 +94,8 @@ class GameBoard: View {
 
         var count = 0
 
+        avgSpaceDifferent = screenWidth / gameBoardCells    //每隔的間距
+
         mPoints.clear()
         for (i in 0..10){
             val row = ArrayList<Point?>()   //創建一個新的行
@@ -136,6 +142,9 @@ class GameBoard: View {
             val x = event.x     //取得觸摸的x座標
             val y = event.y     //取得觸摸的y座標
 
+            eachHalfWidth = width / gameBoardCells / 2     //半格的寬度
+            eachHalfHeight = height / gameBoardCells / 2   //半格的高度
+
             if (isWithinBounds(x, y)){
                 handleTouch(x, y)
             }
@@ -145,10 +154,7 @@ class GameBoard: View {
 
     /**是否在邊界內*/
     private fun isWithinBounds(x: Float, y: Float): Boolean {
-        val eachHalfWidth = width / gameBoardCells / 2     //半格的寬度
         val checkX = !(x <= eachHalfWidth || x >= width - eachHalfWidth)
-
-        val eachHalfHeight = height / gameBoardCells / 2   //半格的高度
         val checkY = !(y <= eachHalfHeight || y >= (height - eachHalfHeight))
 
         GameLog.i("checkX = $checkX , checkY = $checkY")
@@ -222,37 +228,202 @@ class GameBoard: View {
     }
 
     private fun isChessArrConnectInLine(chessArray: ArrayList<ChessPoint>): Boolean{
-        GameLog.i("chessArr = ${Gson().toJson(chessArray)}")
-        var isInLine = false
+        var isWin = false
 
-        val blackChessArr = ArrayList<ChessPoint>()
-        val whiteChessArr = ArrayList<ChessPoint>()
+        val horizontalStoneWinArray = getHorizontalArray(chessArray)
+        val straightStoneWinArray = getStraightStoneArray(chessArray)
+        val slantingStoneWinArray = getSlantingStoneArray(chessArray)
+        GameLog.i("isChessArrConnectInLine() slantingStoneWinArray = ${Gson().toJson(slantingStoneWinArray)}")
 
-        for (chess in chessArray){
-            when(chess.isBlackChess){
-                true -> blackChessArr.add(chess)
-                false -> whiteChessArr.add(chess)
+        var straightCount = 0
+        var horizontalCount = 0
+
+        //1.判斷橫的------------------------------
+        for ((index, stoneList) in horizontalStoneWinArray.withIndex()){
+            val sortedStoneList = stoneList.sortedBy { it.centerX }         //按照x座標排序
+            horizontalStoneWinArray[index] = ArrayList(sortedStoneList)     //把排序後的值重新丟回horizontalStoneWinArray
+        }
+
+        for (stoneList in horizontalStoneWinArray){
+            for ((index,stone) in stoneList.withIndex()){
+
+                //若超出list長度,則跳出
+                if (index + 1 >= stoneList.size){
+                    break
+                }
+
+                //判斷當前棋子與下一個棋子的X坐標差距是否在允許範圍內(表示連在一起)
+                //abs: 絕對值
+                //+3: 誤差值
+                if (abs(stone.centerX - stoneList[index+1].centerX) < avgSpaceDifferent + 3) {
+                    horizontalCount ++
+                }
+            }
+            if (horizontalCount >= 4){
+                isWin = true
+                break
+            }
+            horizontalCount = 0
+        }
+
+        //2.判斷直的------------------------------
+        for ((index, stoneList) in straightStoneWinArray.withIndex()){
+            val sortedStoneList = stoneList.sortedBy { it.centerY }
+            straightStoneWinArray[index] = ArrayList(sortedStoneList)
+        }
+
+        for (stoneList in straightStoneWinArray){
+            for ((index,stone) in stoneList.withIndex()){
+                if (index + 1 >= stoneList.size){
+                    break
+                }
+                if (abs(stone.centerY - stoneList[index+1].centerY) < avgSpaceDifferent+3) {
+                    straightCount ++
+                }
+            }
+            if (straightCount >= 4){
+                isWin = true
+                break
+            }
+            straightCount = 0
+        }
+
+        //3.判斷斜的------------------------------
+        for ((index, stoneList) in slantingStoneWinArray.withIndex()){
+            val sortedStoneList = stoneList.sortedBy { it.centerX }
+            slantingStoneWinArray[index] = ArrayList(sortedStoneList)
+        }
+        GameLog.i("由左至右 排序 : ${Gson().toJson(slantingStoneWinArray)}")
+
+        for (stoneList in slantingStoneWinArray){
+            for (stone in stoneList){
+                //檢查從左上到右下的斜線（/）
+                if (checkDiagonal(stone, chessArray, 1, 1)) {
+                    isWin = true
+                }
+                //檢查從左下到右上的斜線（\）
+                if (checkDiagonal(stone, chessArray, 1, -1)) {
+                    isWin = true
+                }
             }
         }
 
-        for (i in 0 until blackChessArr.size){
-            if (i != blackChessArr[i].centerX == blackChessArr[i].centerX)
+        return isWin
+    }
+
+    /**
+     * 判斷斜線
+     * @param stone 當前檢查的棋子座標
+     * @param mStonesArr 要檢查的棋子的arr
+     * @param dx 檢查方向的x增量
+     * @param dy 檢查方向的y增量
+     */
+    private fun checkDiagonal(stone: ChessPoint, mStonesArr: List<ChessPoint>, dx: Int, dy: Int): Boolean {
+        var count = 1
+
+        //向一個方向檢查
+        var x = stone.centerX
+        var y = stone.centerY
+
+        for (i in 1..4) {
+            x += dx * avgSpaceDifferent
+            y += dy * avgSpaceDifferent
+            if (mStonesArr.any { it.isBlackChess == stone.isBlackChess && abs(it.centerX - x) < 5 && abs(it.centerY - y) < 5 }) {
+                count++
+            } else {
+                break
+            }
         }
 
-//        for (chess in chessArray){
-//
-//            //1.都是直線
-//
-//
-//            //2.都是橫線
-//
-//
-//            //3.斜線
-//
-//
-//        }
+        //向另一个方向檢查
+        x = stone.centerX
+        y = stone.centerY
+        for (i in 1..4) {
+            x -= dx * avgSpaceDifferent
+            y -= dy * avgSpaceDifferent
+            if (mStonesArr.any { it.isBlackChess == stone.isBlackChess && abs(it.centerX - x) < 5 && abs(it.centerY - y) < 5 }) {
+                count++
+            } else {
+                break
+            }
+        }
 
-        return isInLine
+        return count >= 5
+    }
+
+    /**取得斜排的棋子列表*/
+    private fun getSlantingStoneArray(chessArray: ArrayList<ChessPoint>): ArrayList<ArrayList<ChessPoint>> {
+        val slantingStoneWinArray = ArrayList<ArrayList<ChessPoint>>()
+        val dataList = ArrayList<ChessPoint>()
+
+        for (stone in chessArray) {
+            dataList.add(stone.copy())
+        }
+
+        slantingStoneWinArray.add(dataList)
+
+        return slantingStoneWinArray
+    }
+
+    /**取得縱向的棋子列表(相同X軸放一起)*/
+    private fun getStraightStoneArray(chessArray: ArrayList<ChessPoint>):  ArrayList<ArrayList<ChessPoint>> {
+        val straightStoneWinArray = ArrayList<ArrayList<ChessPoint>>()
+
+        for (stone in chessArray){
+            var isFoundSameStone = false
+
+            for (stoneList in straightStoneWinArray){
+                for (data in stoneList){
+                    if (data.centerY == stone.centerY && data.centerX == stone.centerX){
+                        continue
+                    }
+                    if (data.centerX == stone.centerX){
+                        stoneList.add(stone)
+                        isFoundSameStone = true
+                    }
+                    break
+                }
+            }
+
+            if (!isFoundSameStone){
+                val stoneList = ArrayList<ChessPoint>()
+                stoneList.add(stone)
+                straightStoneWinArray.add(stoneList)
+            }
+        }
+        return straightStoneWinArray
+    }
+
+    /**橫向的棋子列表(相同Y軸放一起)*/
+    private fun getHorizontalArray(chessArray: ArrayList<ChessPoint>): ArrayList<ArrayList<ChessPoint>> {
+        val horizontalStoneWinArray = ArrayList<ArrayList<ChessPoint>>()
+
+        for (stone in chessArray){
+            var isFoundSameStone = false
+
+            for (stoneList in horizontalStoneWinArray){
+                for (data in stoneList){
+                    //跳過相同的棋子
+                    if (data.centerY == stone.centerY && data.centerX == stone.centerX){
+                        continue
+                    }
+
+                    //y軸相同, 則加入
+                    if (data.centerY == stone.centerY){
+                        stoneList.add(stone)
+                        isFoundSameStone = true
+                    }
+                    break
+                }
+            }
+
+            if (!isFoundSameStone){
+                val stoneList = ArrayList<ChessPoint>()
+                stoneList.add(stone)
+                horizontalStoneWinArray.add(stoneList)
+            }
+        }
+        return horizontalStoneWinArray
     }
 
     /**找到最近的交界點*/
