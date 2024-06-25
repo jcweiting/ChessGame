@@ -1,4 +1,4 @@
-package com.joyce.gomoku
+package com.joyce.chessgame
 
 import android.util.Log
 

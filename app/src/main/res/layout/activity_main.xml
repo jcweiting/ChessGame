@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.joyce.gomoku.MainViewModel" />
+            type="com.joyce.chessgame.MainViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <com.joyce.gomoku.GameBoard
+        <com.joyce.chessgame.GameBoard
             android:background="@color/game_board_background"
             android:id="@+id/game_board"
             android:layout_width="match_parent"

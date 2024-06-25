@@ -1,4 +1,4 @@
-package com.joyce.gomoku.login
+package com.joyce.chessgame.login
 
 import androidx.lifecycle.ViewModel
 

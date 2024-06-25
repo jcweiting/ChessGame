@@ -4,4 +4,6 @@
     <string name="win">Win!</string>
     <string name="player1">玩家1 (黑子)</string>
     <string name="player2">玩家2 (白子)</string>
+    <string name="logout">登出</string>
+    <string name="default_web_client_id">860839150557-820ekfjfum05t9lof2hqthaspn06t5so.apps.googleusercontent.com</string>
 </resources>

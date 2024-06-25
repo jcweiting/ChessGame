@@ -1,4 +1,4 @@
-package com.joyce.gomoku
+package com.joyce.chessgame
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

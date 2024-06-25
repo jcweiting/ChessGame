@@ -1,4 +1,4 @@
-package com.joyce.gomoku
+package com.joyce.chessgame
 
 class Point(var centerX: Float, var centerY: Float, var index: Int){
 

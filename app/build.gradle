@@ -1,14 +1,15 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
 }
 
 android {
-    namespace 'com.joyce.gomoku'
+    namespace 'com.joyce.chessgame'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.joyce.gomoku"
+        applicationId "com.joyce.chessgame"
         minSdk 29
         targetSdk 34
         versionCode 1
@@ -39,6 +40,14 @@ android {
 }
 
 dependencies {
+
+    //Google login
+    implementation 'com.google.firebase:firebase-auth:23.0.0'
+    implementation 'com.google.android.gms:play-services-auth:21.2.0'
+
+    //Firebase
+    implementation platform('com.google.firebase:firebase-bom:33.1.1')
+    implementation 'com.google.firebase:firebase-analytics'
 
     //Gson
     implementation 'com.google.code.gson:gson:2.10.1'

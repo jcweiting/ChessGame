@@ -1,4 +1,4 @@
-package com.joyce.gomoku
+package com.joyce.chessgame
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -6,7 +6,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.joyce.gomoku.databinding.ActivityMainBinding
+import com.joyce.chessgame.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
