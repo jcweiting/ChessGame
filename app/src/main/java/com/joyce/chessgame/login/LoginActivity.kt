@@ -9,10 +9,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.joyce.chessgame.GameLog
+import com.joyce.chessgame.MainActivity
 import com.joyce.chessgame.R
 import com.joyce.chessgame.databinding.ActivityLoginBinding
 
@@ -46,6 +48,7 @@ class LoginActivity : AppCompatActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
         auth = FirebaseAuth.getInstance()
+
     }
 
     private fun liveDataCollection() {
@@ -53,9 +56,17 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun buttonCollection() {
-        binding.btnGoogleLogin.setOnClickListener {
+        binding.cnsGoogleLogin.setOnClickListener {
             googleSignIn()
         }
+
+        binding.cnsFbLogin.setOnClickListener {
+            fbLogin()
+        }
+    }
+
+    private fun fbLogin() {
+
     }
 
     private fun googleSignIn() {
@@ -72,7 +83,7 @@ class LoginActivity : AppCompatActivity() {
                 firebaseAuthWithGoogle(account)
             } catch (e: ApiException) {
                 GameLog.i("回傳碼error = ${e.status} & ${e.message}")
-                // Handle exception
+                //TODO: 顯示登入失敗dialog
             }
         }
     }
@@ -82,11 +93,19 @@ class LoginActivity : AppCompatActivity() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this){ task ->
                 if (task.isSuccessful){
-                    GameLog.i("google登入成功")
                     val user = auth.currentUser
+                    GameLog.i("google登入成功")
+                    convertToMainActivity()
+
                 } else {
                     GameLog.i("google登入失敗")
                 }
             }
+    }
+
+    private fun convertToMainActivity() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }
