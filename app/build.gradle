@@ -41,6 +41,9 @@ android {
 
 dependencies {
 
+    //Facebook login
+    implementation 'com.facebook.android:facebook-login:latest.release'
+
     //Google login
     implementation 'com.google.firebase:firebase-auth:23.0.0'
     implementation 'com.google.android.gms:play-services-auth:21.2.0'
