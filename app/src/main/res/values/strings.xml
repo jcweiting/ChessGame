@@ -8,7 +8,11 @@
     <string name="default_web_client_id">860839150557-820ekfjfum05t9lof2hqthaspn06t5so.apps.googleusercontent.com</string>
     <string name="google_login">Google帳號登入</string>
     <string name="fb_login">Facebook帳號登入</string>
-    <string name="facebook_app_id">1234</string>
-    <string name="fb_login_protocol_scheme">fb1234</string>
-    <string name="facebook_client_token">56789</string>
+    <string name="facebook_app_id">868959785248830</string>
+    <string name="fb_login_protocol_scheme">fb868959785248830</string>
+    <string name="facebook_client_token">ab1c4882024d1adf14b383651d08606a</string>
+    <string name="login_failed">登入失敗</string>
+    <string name="try_later">請稍後再試</string>
+    <string name="confirm">確定</string>
+    <string name="cancel_login">已取消登入</string>
 </resources>

@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "860839150557-gv40u8c341h6btgrmsm0om4bf9gijbrt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.joyce.chessgame",
+            "certificate_hash": "c96aa8f1b6c68d1c75d690633b95b4d7d1d933a3"
+          }
+        },
+        {
           "client_id": "860839150557-94md051pnneu788hsp3eek34ekpar2uc.apps.googleusercontent.com",
           "client_type": 3
         }

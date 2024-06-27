@@ -5,5 +5,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="red">#FD0000</color>
     <color name="game_board_background">#956E61</color>
+    <color name="progress_bar">#2F3A39</color>
+    <color name="mask">#E6787878</color>
 
 </resources>
