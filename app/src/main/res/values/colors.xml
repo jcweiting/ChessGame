@@ -7,5 +7,6 @@
     <color name="game_board_background">#956E61</color>
     <color name="progress_bar">#2F3A39</color>
     <color name="mask">#E6787878</color>
+    <color name="menu_list_bg">#3F434C</color>
 
 </resources>

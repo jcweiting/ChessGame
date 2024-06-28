@@ -15,4 +15,8 @@
     <string name="try_later">請稍後再試</string>
     <string name="confirm">確定</string>
     <string name="cancel_login">已取消登入</string>
+    <string name="single_mode">單人模式</string>
+    <string name="multiple_mode">連線模式</string>
+    <string name="setting">設定</string>
+    <string name="exit">離開</string>
 </resources>

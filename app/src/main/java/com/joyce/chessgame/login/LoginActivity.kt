@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
 import com.facebook.FacebookException
-import com.facebook.FacebookSdk
 import com.facebook.GraphRequest
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
@@ -22,9 +21,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.joyce.chessgame.GameLog
-import com.joyce.chessgame.MainActivity
 import com.joyce.chessgame.R
 import com.joyce.chessgame.databinding.ActivityLoginBinding
+import com.joyce.chessgame.menu.MenuActivity
 import org.json.JSONException
 
 class LoginActivity : AppCompatActivity() {
@@ -154,7 +153,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun convertToMainActivity() {
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, MenuActivity::class.java)
         startActivity(intent)
         finish()
     }
