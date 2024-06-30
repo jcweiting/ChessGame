@@ -51,8 +51,12 @@ android {
 
 dependencies {
 
+    //Encrypt
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+
     //Facebook login
     implementation 'com.facebook.android:facebook-login:latest.release'
+    implementation 'com.google.firebase:firebase-firestore:25.0.0'
 
     //Google login
     implementation 'com.google.firebase:firebase-auth:23.0.0'

@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="50dp"
             android:layout_marginTop="150dp"
-            android:layout_marginStart="-45dp"
+            android:layout_marginStart="-60dp"
             android:src="@drawable/bg_menu_phone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -104,10 +104,10 @@
 
             <TextView
                 android:id="@+id/tv_setting"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:text="@string/setting"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="15dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -139,10 +139,10 @@
 
             <TextView
                 android:id="@+id/tv_exit"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:text="@string/exit"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="15dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"

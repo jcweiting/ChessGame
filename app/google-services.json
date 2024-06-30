@@ -14,19 +14,19 @@
       },
       "oauth_client": [
         {
+          "client_id": "860839150557-0ta0mdkoolmp6t1sr4egcle985kt53a7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.joyce.chessgame",
+            "certificate_hash": "ad508e5aa2051a4ae4795741bdbf37bb9e2f4bf8"
+          }
+        },
+        {
           "client_id": "860839150557-820ekfjfum05t9lof2hqthaspn06t5so.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.joyce.chessgame",
             "certificate_hash": "600b720a9eaa1fa39f75b0bf28b0169d5a4526d9"
-          }
-        },
-        {
-          "client_id": "860839150557-gv40u8c341h6btgrmsm0om4bf9gijbrt.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.joyce.chessgame",
-            "certificate_hash": "c96aa8f1b6c68d1c75d690633b95b4d7d1d933a3"
           }
         },
         {

@@ -6,12 +6,23 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainViewModel
+
+    override fun onResume() {
+        super.onResume()
+        GameLog.i("MainActivity onResume ================================")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        GameLog.i("MainActivity onPause ================================")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

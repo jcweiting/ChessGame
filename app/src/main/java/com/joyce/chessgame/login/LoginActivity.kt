@@ -5,9 +5,9 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.facebook.AccessToken
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
 import com.facebook.FacebookException
@@ -21,18 +21,23 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.joyce.chessgame.GameLog
+import com.joyce.chessgame.GlobalConfig.Companion.FACEBOOK
+import com.joyce.chessgame.GlobalConfig.Companion.GOOGLE
+import com.joyce.chessgame.MyApplication
 import com.joyce.chessgame.R
+import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityLoginBinding
 import com.joyce.chessgame.menu.MenuActivity
 import org.json.JSONException
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var viewModel: LoginViewModel
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var callbackManager: CallbackManager
+    private var loginType = ""
 
     companion object{
         const val RC_SIGN_IN = 9001
@@ -40,6 +45,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        GameLog.i("LoginActivity onCreate ================================")
 
         viewModel = ViewModelProvider(this)[LoginViewModel::class.java]
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login)
@@ -49,6 +55,8 @@ class LoginActivity : AppCompatActivity() {
         initLogin()
         buttonCollection()
         liveDataCollection()
+
+        viewModel.checkAutoLogin()
     }
 
     private fun initLogin() {
@@ -66,6 +74,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun liveDataCollection() {
+        viewModel.isAutoLoginLiveData.observe(this){
+            loginType = it.second
+            newUserData(true, it.first, it.second)
+        }
+
         viewModel.authResult.observe(this){
             showLoginFailedDialog()
         }
@@ -80,12 +93,14 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun buttonCollection() {
-        binding.cnsGoogleLogin.setOnClickListener {
-            googleSignIn()
+        binding.cnsFbLogin.setOnClickListener {
+            viewModel.setIsLoginByBtn(true)
+            fbLogin()
         }
 
-        binding.cnsFbLogin.setOnClickListener {
-            fbLogin()
+        binding.cnsGoogleLogin.setOnClickListener {
+            viewModel.setIsLoginByBtn(true)
+            googleSignIn()
         }
     }
 
@@ -106,21 +121,19 @@ class LoginActivity : AppCompatActivity() {
                 GameLog.i("fb login success")
 
                 val accessToken = result.accessToken
-                val request = GraphRequest.newMeRequest(accessToken){`object`, _ ->
+                GraphRequest.newMeRequest(accessToken){`object`, _ ->
                     try {
                         val email = `object`?.getString("email")
                         val name = `object`?.getString("name")
-                        GameLog.i("登入成功, 用戶訊息 = $name & $email")
+
+                        loginType = FACEBOOK
+                        newUserData(true, email, loginType)
+
                     } catch (e: JSONException){
                         e.printStackTrace()
+                        showLoginFailedDialog()
                     }
                 }
-                val parameters = Bundle()
-                parameters.putString("fields", "id, name, email")
-                request.parameters = parameters
-                request.executeAsync()
-
-                convertToMainActivity()
             }
         })
     }
@@ -144,7 +157,10 @@ class LoginActivity : AppCompatActivity() {
             .addOnCompleteListener(this){ task ->
                 if (task.isSuccessful){
                     val user = auth.currentUser
-                    convertToMainActivity()
+                    user?.let {
+                        loginType = GOOGLE
+                        newUserData(true, user.email, loginType)
+                    }
 
                 } else {
                     showLoginFailedDialog()
@@ -152,7 +168,7 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
-    private fun convertToMainActivity() {
+    fun convertToMainActivity() {
         val intent = Intent(this, MenuActivity::class.java)
         startActivity(intent)
         finish()
@@ -178,4 +194,39 @@ class LoginActivity : AppCompatActivity() {
             .setPositiveButton(getString(R.string.confirm), null)
             .show()
     }
+
+//    /**確認是否已登入*/
+//    private fun checkedLoginRecord() {
+//        var isFbLoggedIn = false
+//        var isGoogleLoggedIn = false
+//
+//        //FB
+//        val fbToken = AccessToken.getCurrentAccessToken()
+//        if (fbToken != null && !fbToken.isExpired){
+//            loginType = FACEBOOK
+//            isFbLoggedIn = true
+//            GraphRequest.newMeRequest(fbToken){ jsonObject, _ ->
+//                val email = jsonObject?.optString("email")
+//                newUserData(true, email, loginType)
+//                GameLog.i("FB自動登入，確認Email是否相同 = $email")
+//            }
+//        }
+//
+//        if (!isFbLoggedIn){
+//            //google
+//            val googleAcc = GoogleSignIn.getLastSignedInAccount(MyApplication.instance)
+//            if (googleAcc != null){
+//                GameLog.i("Google自動登入，確認Email是否相同 = ${googleAcc.email}")
+//                loginType = GOOGLE
+//                isGoogleLoggedIn = true
+//                newUserData(true, googleAcc.email, loginType)
+//            }
+//        }
+//
+//        GameLog.i("用GOOGLE帳號 = $isGoogleLoggedIn | 用FB帳號 = $isFbLoggedIn")
+//        if (isGoogleLoggedIn || isFbLoggedIn){
+//            GameLog.i("已自動登入，跳轉至選單頁")
+//            convertToMainActivity()
+//        }
+//    }
 }
