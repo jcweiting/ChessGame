@@ -7,13 +7,16 @@ import com.joyce.chessgame.Util
 
 class GameBoardViewModel: ViewModel() {
 
-    var showPlayerLiveData = MutableLiveData<String>()
     var showWinnerLiveData = MutableLiveData<String>()
+    var blackChessActiveLiveData = MutableLiveData<Boolean>()
+    var whiteChessActiveLiveData = MutableLiveData<Boolean>()
 
     fun onChangePlayer(blackChess: Boolean) {
-        showPlayerLiveData.value = if (blackChess) Util.getString(R.string.player1) else Util.getString(
-            R.string.player2
-        )
+        if (blackChess){
+            blackChessActiveLiveData.value = true
+        } else {
+            whiteChessActiveLiveData.value = true
+        }
     }
 
     fun showWinnerView(blackChess: Boolean) {
@@ -21,6 +24,4 @@ class GameBoardViewModel: ViewModel() {
             R.string.player2
         )
     }
-
-
 }

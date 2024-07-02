@@ -27,6 +27,11 @@ class GameBoard: View {
     private var eachHalfWidth = 0
     private var eachHalfHeight = 0
     private var avgSpaceDifferent = 0.0f //每一格的間距
+    private var modeType = ""
+
+    fun setModeType(modeType: String){
+        this.modeType = modeType
+    }
 
     fun setGameBoardListener(listener: OnGameBoardListener){
         this.listener = listener
@@ -188,7 +193,15 @@ class GameBoard: View {
     /**放置旗棋子*/
     private fun placeStone(point: ChessPoint) {
         GameLog.i("棋子座標 = ${Gson().toJson(point)}")
-        mStonesArr.add(point)           //將棋子座標加到列表中
+        //將棋子座標加到列表中
+        mStonesArr.add(point)
+
+        //下第一顆棋後, 開始計時
+        if (mStonesArr.size == 1){
+            listener?.onStartCountTime()
+            listener?.onStartCountDown()
+        }
+
 
         if (checkConnectInLine()){
             listener?.onConnectInLine(isBlackChess)
@@ -200,6 +213,7 @@ class GameBoard: View {
     private fun updateGameBoard(){
         isBlackChess = !isBlackChess    //儲存落子之後換玩家
         listener?.onChangePlayer(isBlackChess)
+        listener?.onStartCountDown()
         invalidate()                    //重繪視圖
     }
 
@@ -235,13 +249,7 @@ class GameBoard: View {
         val horizontalStoneWinArray = getHorizontalArray(chessArray)
         val straightStoneWinArray = getStraightStoneArray(chessArray)
         val slantingStoneWinArray = getSlantingStoneArray(chessArray)
-        GameLog.i(
-            "isChessArrConnectInLine() slantingStoneWinArray = ${
-                Gson().toJson(
-                    slantingStoneWinArray
-                )
-            }"
-        )
+        GameLog.i("isChessArrConnectInLine() slantingStoneWinArray = ${Gson().toJson(slantingStoneWinArray)}")
 
         var straightCount = 0
         var horizontalCount = 0
@@ -460,5 +468,7 @@ class GameBoard: View {
     interface OnGameBoardListener{
         fun onChangePlayer(isBlackChess: Boolean)
         fun onConnectInLine(isBlackChess: Boolean)
+        fun onStartCountDown()
+        fun onStartCountTime()
     }
 }
