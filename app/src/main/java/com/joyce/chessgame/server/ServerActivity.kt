@@ -13,7 +13,7 @@ class ServerActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ServerViewModel
     private lateinit var dataBinding: ActivityServerBinding
-
+    private var adapter : ServerLogAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,8 +27,17 @@ class ServerActivity : AppCompatActivity() {
         viewModel.processIntent(ServerIntent.OnCreate)
 
         viewModel.viewState.observe(this){
-            val adapter = ServerLogAdapter(it.logList)
-            dataBinding.logList.adapter = adapter
+            if (it.logList != null){
+                if (adapter == null) {
+                    adapter = ServerLogAdapter(it.logList)
+                    dataBinding.logList.adapter = adapter
+                    dataBinding.logList.scrollToPosition(it.logList.size - 1)
+                }else{
+                    adapter?.updateData(it.logList)
+                    dataBinding.logList.scrollToPosition(it.logList.size - 1)
+                }
+            }
+
         }
 
 

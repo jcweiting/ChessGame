@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.joyce.chessgame.R
 import com.joyce.chessgame.server.bean.ServerLogData
 
-class ServerLogAdapter(private val dataList: ArrayList<ServerLogData>) :
+class ServerLogAdapter(private var dataList: ArrayList<ServerLogData>) :
     RecyclerView.Adapter<ServerLogAdapter.ViewHolder>() {
 
 
@@ -23,6 +23,11 @@ class ServerLogAdapter(private val dataList: ArrayList<ServerLogData>) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.tvLog.text = dataList[position].log
         holder.tvTime.text = dataList[position].time
+    }
+
+    fun updateData(logList: java.util.ArrayList<ServerLogData>) {
+        this.dataList = logList
+        notifyDataSetChanged()
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

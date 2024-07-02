@@ -5,5 +5,6 @@ data class GameRoomData (
     val host :String ,
     val user2:String ,
     val timeStamp:Long ,
-    val status:Long
+    val status:Long,
+    val documentId:String
 )

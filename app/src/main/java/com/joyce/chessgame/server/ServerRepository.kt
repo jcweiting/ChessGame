@@ -7,6 +7,12 @@ import com.google.firebase.ktx.Firebase
 import com.joyce.chessgame.server.bean.ActionData
 import com.joyce.chessgame.server.bean.GameRoomData
 import com.joyce.chessgame.server.bean.MemberData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class ServerRepository {
@@ -17,7 +23,7 @@ class ServerRepository {
         const val READY_TO_COUNT_DOWN = 2L
         const val GO_CHESS_BOARD = 2L
     }
-
+    private val roomsList = ArrayList<GameRoomData>()
     private lateinit var onCatchDataFromDataBaseListener: OnCatchDataFromDataBaseListener
     private val db = Firebase.firestore
     private var memberList = ArrayList<MemberData>()
@@ -71,11 +77,11 @@ class ServerRepository {
         db.collection("Actions")
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
-                    Log.w("Michael", "Listen failed.", e)
+                    Log.i("Michael", "Listen failed.", e)
                     return@addSnapshotListener
                 }
                 if (snapshot == null || snapshot.isEmpty) {
-                    Log.d("Michael", "Current data: null")
+                    Log.i("Michael", "Current data: null")
                     return@addSnapshotListener
                 }
                 val actionsList = ArrayList<ActionData>()
@@ -104,14 +110,65 @@ class ServerRepository {
                         createRoom(action)
                     }
                     if (action.actionType == READY_TO_COUNT_DOWN){
-                        startCountingDownForRoom(action.roomId)
+                        handleCountingDown(action)
                     }
                 }
             }
     }
 
-    private fun startCountingDownForRoom(roomId: String) {
+    private val job = Job()
+    private val scope = CoroutineScope(Dispatchers.Main + job)
 
+    private fun handleCountingDown(action: ActionData) {
+        onCatchDataFromDataBaseListener.onShowLog("收到開始倒數房間 : ${action.roomId}")
+        scope.launch(Dispatchers.IO) {
+            for (time in 10 downTo  0){
+                updateSecondToRoom(action.roomId,time)
+                withContext(Dispatchers.Main){
+                    onCatchDataFromDataBaseListener.onShowLog("Room : ${action.roomId} 開始倒數計時 : $time")
+                }
+                delay(1000L)
+            }
+            countingDownFinish(action.roomId)
+            updateRoomStatus(action.roomId)
+            clearActionData(action.documentId)
+        }
+    }
+
+    private fun countingDownFinish(roomId: String) {
+        val roomData = hashMapOf(
+            "second" to 0,
+            "msg" to "對弈開始",
+            "status" to GO_CHESS_BOARD
+        )
+        db.collection("Room_Action")
+            .document(roomId)
+            .set(roomData, SetOptions.merge())
+    }
+
+    private fun updateRoomStatus(roomId: String) {
+        var roomData : GameRoomData? = null
+        roomData = roomsList.find {
+            it.roomId == roomId
+        }
+        roomData?.let {
+            val roomRef = db.collection("Rooms").document(it.documentId)
+            roomRef.update("status", GO_CHESS_BOARD)
+                .addOnSuccessListener {
+                    onCatchDataFromDataBaseListener.onShowLog("已更新房間狀態 : $roomId")
+                }
+        }
+    }
+
+    private fun updateSecondToRoom(roomId: String, time: Int) {
+        val roomData = hashMapOf(
+            "second" to time,
+            "msg" to "對弈即將開始,倒數${time}秒",
+            "status" to READY_TO_COUNT_DOWN
+        )
+        db.collection("Room_Action")
+            .document(roomId)
+            .set(roomData, SetOptions.merge())
     }
 
     private fun createRoom(action: ActionData) {
@@ -160,7 +217,7 @@ class ServerRepository {
                     Log.d("Michael", "Current data: null")
                     return@addSnapshotListener
                 }
-                val roomsList = ArrayList<GameRoomData>()
+                roomsList.clear()
                 for (document in snapshot) {
                     var host = ""
                     var roomId = ""
@@ -182,7 +239,7 @@ class ServerRepository {
                     document.getLong("timeStamp")?.let { time->
                         timeStamp = time
                     }
-                    val roomData = GameRoomData(roomId,host,user2,timeStamp,status)
+                    val roomData = GameRoomData(roomId,host,user2,timeStamp,status,document.id)
                     roomsList.add(roomData)
                 }
                 var waitingCount = 0
