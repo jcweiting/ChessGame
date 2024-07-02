@@ -1,4 +1,4 @@
-package com.joyce.chessgame
+package com.joyce.chessgame.game_board
 
 class Point(var centerX: Float, var centerY: Float, var index: Int){
 
@@ -11,7 +11,7 @@ class Point(var centerX: Float, var centerY: Float, var index: Int){
 }
 
 class ChessPoint(var isBlackChess: Boolean, var centerX: Float, var centerY: Float){
-    fun copy(): ChessPoint{
+    fun copy(): ChessPoint {
         return ChessPoint(isBlackChess, centerX, centerY)
     }
 }

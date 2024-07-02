@@ -1,34 +1,34 @@
-package com.joyce.chessgame
+package com.joyce.chessgame.game_board
 
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.joyce.chessgame.R
 import com.joyce.chessgame.base.BaseActivity
-import com.joyce.chessgame.databinding.ActivityMainBinding
+import com.joyce.chessgame.databinding.ActivityGameBoardBinding
 
-class MainActivity : BaseActivity() {
+class GameBoardActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var viewModel: MainViewModel
+    private lateinit var binding: ActivityGameBoardBinding
+    private lateinit var viewModel: GameBoardViewModel
 
     override fun onResume() {
         super.onResume()
-        GameLog.i("MainActivity onResume ================================")
+
     }
 
     override fun onPause() {
         super.onPause()
-        GameLog.i("MainActivity onPause ================================")
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        viewModel = ViewModelProvider(this)[GameBoardViewModel::class.java]
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_game_board)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
@@ -50,7 +50,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun gameBoardListener() {
-        binding.gameBoard.setGameBoardListener(object : GameBoard.OnGameBoardListener{
+        binding.gameBoard.setGameBoardListener(object : GameBoard.OnGameBoardListener {
             override fun onChangePlayer(isBlackChess: Boolean) {
                 viewModel.onChangePlayer(isBlackChess)
             }
