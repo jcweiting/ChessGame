@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="black">#FF000000</color>
+    <color name="black_85_percent">#D9000000</color>
     <color name="dark_grey">#2C2C2C</color>
     <color name="light_grey">#B1B1B1</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="light_yellow">#FDF4A3</color>
     <color name="white_75_percent">#BFFFFFFF</color>
     <color name="brown_85664F">#85664F</color>
     <color name="red">#FD0000</color>

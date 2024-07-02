@@ -75,9 +75,9 @@ class GameBoard: View {
         //棋盤格線
         mNormalPaint = Paint().apply {
             color = mNormalColor
-            isAntiAlias = true             //是否抗鋸齒
-            style = Paint.Style.STROKE     //樣式：Stroke 描邊; Fill 填充; Fill and Stroke 描邊加填充
-            strokeWidth = 5f               //寬度
+            isAntiAlias = true
+            style = Paint.Style.STROKE
+            strokeWidth = 5f
         }
 
         //黑子
@@ -195,13 +195,6 @@ class GameBoard: View {
         GameLog.i("棋子座標 = ${Gson().toJson(point)}")
         //將棋子座標加到列表中
         mStonesArr.add(point)
-
-        //下第一顆棋後, 開始計時
-        if (mStonesArr.size == 1){
-            listener?.onStartCountTime()
-            listener?.onStartCountDown()
-        }
-
 
         if (checkConnectInLine()){
             listener?.onConnectInLine(isBlackChess)
@@ -462,6 +455,7 @@ class GameBoard: View {
 
     fun onClearGameBoard(){
         mStonesArr.clear()
+        isBlackChess = true
         invalidate()
     }
 
@@ -469,6 +463,5 @@ class GameBoard: View {
         fun onChangePlayer(isBlackChess: Boolean)
         fun onConnectInLine(isBlackChess: Boolean)
         fun onStartCountDown()
-        fun onStartCountTime()
     }
 }

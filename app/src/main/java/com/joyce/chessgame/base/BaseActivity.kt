@@ -65,7 +65,7 @@ open class BaseActivity: AppCompatActivity() {
             }
 
         }.addOnSuccessListener {
-            GameLog.i("*****用戶資料更新-成功*****")
+            GameLog.i("*****用戶資料更新-成功***** ${Gson().toJson(userData)}")
             onComplete()
 
         }.addOnFailureListener {

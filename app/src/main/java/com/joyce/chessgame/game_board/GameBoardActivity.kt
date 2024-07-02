@@ -38,21 +38,27 @@ class GameBoardActivity : BaseActivity() {
         binding.lifecycleOwner = this
 
         modeType = intent.getStringExtra(MODE_TYPE)
-        modeType?.let {
-            binding.gameBoard.setModeType(it)
-        }
-        GameLog.i("play mode = $modeType")
+        init()
 
         buttonCollection()
         gameBoardListener()
         liveDataCollection()
     }
 
-    @SuppressLint("SetTextI18n")
+    private fun init(){
+        GameLog.i("play mode = $modeType")
+        modeType?.let {
+            binding.gameBoard.setModeType(it)
+        }
+
+        startCountDownTimer()
+    }
+
     private fun liveDataCollection() {
         viewModel.showWinnerLiveData.observe(this){
-            binding.tvWin.visibility = View.VISIBLE
-            binding.tvWin.text = it + "Win!"
+            showWinnerView(it)
+            countDownTimer?.cancel()
+            binding.tvTimingCountDown.visibility = View.GONE
         }
 
         viewModel.blackChessActiveLiveData.observe(this){
@@ -77,22 +83,25 @@ class GameBoardActivity : BaseActivity() {
             override fun onStartCountDown() {
                 startCountDownTimer()
             }
-
-            override fun onStartCountTime() {
-
-            }
         })
     }
 
     private fun buttonCollection() {
-        binding.tvClear.setOnClickListener {
-            binding.gameBoard.onClearGameBoard()
+        binding.tvRestart.setOnClickListener {
+            restart()
         }
 
         binding.tvWin.setOnClickListener {
-            binding.tvWin.visibility = View.GONE
-            binding.gameBoard.onClearGameBoard()
+            hideWinnerView()
+            restart()
         }
+    }
+
+    private fun restart(){
+        binding.tvTimingCountDown.visibility = View.VISIBLE
+        binding.gameBoard.onClearGameBoard()
+        isActiveBlackChess()
+        startCountDownTimer()
     }
 
     private fun isActiveBlackChess(){
@@ -107,6 +116,18 @@ class GameBoardActivity : BaseActivity() {
         binding.imFlag2.visibility = View.VISIBLE
         binding.tvPlayer1.setBackgroundResource(R.drawable.bg_player_inactive)
         binding.tvPlayer2.setBackgroundResource(R.drawable.bg_player_active)
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun showWinnerView(player: String) {
+        binding.tvWin.visibility = View.VISIBLE
+        binding.imWin.visibility = View.VISIBLE
+        binding.tvWin.text = player + "Win!"
+    }
+
+    private fun hideWinnerView(){
+        binding.tvWin.visibility = View.GONE
+        binding.imWin.visibility = View.GONE
     }
 
     private fun startCountDownTimer(){

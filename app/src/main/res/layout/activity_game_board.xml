@@ -86,7 +86,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tv_clear"
+            android:id="@+id/tv_restart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="50dp"
@@ -100,19 +100,28 @@
         <TextView
             android:id="@+id/tv_win"
             android:gravity="center"
-            android:textSize="50sp"
+            android:textSize="26sp"
             android:textStyle="bold"
-            android:background="@color/black"
-            android:textColor="@color/red"
+            android:background="@drawable/bg_gameboard_win"
+            android:textColor="@color/light_yellow"
             android:visibility="gone"
-            android:layout_marginLeft="70dp"
-            android:layout_marginRight="70dp"
-            android:layout_marginBottom="50dp"
+            app:layout_constraintTop_toTopOf="@+id/im_win"
+            app:layout_constraintBottom_toBottomOf="@+id/im_win"
+            app:layout_constraintLeft_toLeftOf="@+id/im_win"
+            app:layout_constraintRight_toRightOf="@+id/im_win"
+            android:layout_width="0dp"
+            android:layout_height="0dp"/>
+
+        <ImageView
+            android:id="@+id/im_win"
+            android:src="@drawable/bg_win"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_width="300dp"
+            android:layout_height="300dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
