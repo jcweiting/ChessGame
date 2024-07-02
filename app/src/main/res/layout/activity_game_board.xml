@@ -6,13 +6,13 @@
     <data>
         <variable
             name="viewModel"
-            type="com.joyce.gomoku.MainViewModel" />
+            type="com.joyce.chessgame.game_board.GameBoardViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        tools:context=".game_board.GameBoardActivity">
 
         <TextView
             android:id="@+id/tv_player"
@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <com.joyce.gomoku.GameBoard
+        <com.joyce.chessgame.game_board.GameBoard
             android:background="@color/game_board_background"
             android:id="@+id/game_board"
             android:layout_width="match_parent"
