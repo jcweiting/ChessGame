@@ -17,6 +17,7 @@ import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.MainActivity
 import com.joyce.chessgame.R
 import com.joyce.chessgame.databinding.ActivityLoginBinding
+import com.joyce.chessgame.server.ServerActivity
 
 class LoginActivity : AppCompatActivity() {
 
@@ -48,6 +49,9 @@ class LoginActivity : AppCompatActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
         auth = FirebaseAuth.getInstance()
+
+        val it = Intent(this,ServerActivity::class.java)
+        startActivity(it)
 
     }
 
