@@ -2,45 +2,64 @@ package com.joyce.chessgame.login
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.GraphRequest
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.SignInButton
-import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.joyce.chessgame.GameLog
-import com.joyce.chessgame.MainActivity
+import com.joyce.chessgame.GlobalConfig.Companion.FACEBOOK
+import com.joyce.chessgame.GlobalConfig.Companion.GOOGLE
+import com.joyce.chessgame.MyApplication
 import com.joyce.chessgame.R
+import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityLoginBinding
-import com.joyce.chessgame.server.ServerActivity
+import com.joyce.chessgame.menu.MenuActivity
+import org.json.JSONException
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var viewModel: LoginViewModel
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var callbackManager: CallbackManager
+    private var loginType = ""
 
     companion object{
-        private const val RC_SIGN_IN = 9001
+        const val RC_SIGN_IN = 9001
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        GameLog.i("LoginActivity onCreate ================================")
 
         viewModel = ViewModelProvider(this)[LoginViewModel::class.java]
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
+        initLogin()
         buttonCollection()
         liveDataCollection()
 
+        viewModel.checkAutoLogin()
+    }
+
+    private fun initLogin() {
         // Configure Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
@@ -50,27 +69,73 @@ class LoginActivity : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this, gso)
         auth = FirebaseAuth.getInstance()
 
-        val it = Intent(this,ServerActivity::class.java)
-        startActivity(it)
-
+        //init callback Manager
+        callbackManager = CallbackManager.Factory.create()
     }
 
     private fun liveDataCollection() {
+        viewModel.isAutoLoginLiveData.observe(this){
+            loginType = it.second
+            newUserData(true, it.first, it.second)
+        }
 
+        viewModel.authResult.observe(this){
+            showLoginFailedDialog()
+        }
+
+        viewModel.firebaseAuthLiveData.observe(this){ data ->
+            firebaseAuthWithGoogle(data)
+        }
+
+        viewModel.showProgressBarLiveData.observe(this){
+            showProgressBar(it)
+        }
     }
 
     private fun buttonCollection() {
-        binding.cnsGoogleLogin.setOnClickListener {
-            googleSignIn()
+        binding.cnsFbLogin.setOnClickListener {
+            viewModel.setIsLoginByBtn(true)
+            fbLogin()
         }
 
-        binding.cnsFbLogin.setOnClickListener {
-            fbLogin()
+        binding.cnsGoogleLogin.setOnClickListener {
+            viewModel.setIsLoginByBtn(true)
+            googleSignIn()
         }
     }
 
     private fun fbLogin() {
+        LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
 
+        LoginManager.getInstance().registerCallback(callbackManager, object : FacebookCallback<LoginResult>{
+            override fun onCancel() {
+                Toast.makeText(this@LoginActivity, getString(R.string.cancel_login), Toast.LENGTH_LONG).show()
+            }
+
+            override fun onError(error: FacebookException) {
+                GameLog.i("FB Login Failed = ${error.message}")
+                showLoginFailedDialog()
+            }
+
+            override fun onSuccess(result: LoginResult) {
+                GameLog.i("fb login success")
+
+                val accessToken = result.accessToken
+                GraphRequest.newMeRequest(accessToken){`object`, _ ->
+                    try {
+                        val email = `object`?.getString("email")
+                        val name = `object`?.getString("name")
+
+                        loginType = FACEBOOK
+                        newUserData(true, email, loginType)
+
+                    } catch (e: JSONException){
+                        e.printStackTrace()
+                        showLoginFailedDialog()
+                    }
+                }
+            }
+        })
     }
 
     private fun googleSignIn() {
@@ -80,36 +145,88 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(ApiException::class.java)!!
-                firebaseAuthWithGoogle(account)
-            } catch (e: ApiException) {
-                GameLog.i("回傳碼error = ${e.status} & ${e.message}")
-                //TODO: 顯示登入失敗dialog
-            }
-        }
+        viewModel.checkResponseCode(requestCode, data)
+        callbackManager.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun firebaseAuthWithGoogle(account: GoogleSignInAccount) {
+        viewModel.hideProgressBar()
+
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this){ task ->
                 if (task.isSuccessful){
                     val user = auth.currentUser
-                    GameLog.i("google登入成功")
-                    convertToMainActivity()
+                    user?.let {
+                        loginType = GOOGLE
+                        newUserData(true, user.email, loginType)
+                    }
 
                 } else {
-                    GameLog.i("google登入失敗")
+                    showLoginFailedDialog()
                 }
             }
     }
 
-    private fun convertToMainActivity() {
-        val intent = Intent(this, MainActivity::class.java)
+    fun convertToMainActivity() {
+        val intent = Intent(this, MenuActivity::class.java)
         startActivity(intent)
         finish()
     }
+
+    private fun showProgressBar(isShowed:Boolean){
+        when(isShowed){
+            true -> {
+                binding.pbLogin.visibility = View.VISIBLE
+                binding.maskLogin.visibility = View.VISIBLE
+            }
+            false -> {
+                binding.pbLogin.visibility = View.GONE
+                binding.maskLogin.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun showLoginFailedDialog(){
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.login_failed))
+            .setMessage(getString(R.string.try_later))
+            .setPositiveButton(getString(R.string.confirm), null)
+            .show()
+    }
+
+//    /**確認是否已登入*/
+//    private fun checkedLoginRecord() {
+//        var isFbLoggedIn = false
+//        var isGoogleLoggedIn = false
+//
+//        //FB
+//        val fbToken = AccessToken.getCurrentAccessToken()
+//        if (fbToken != null && !fbToken.isExpired){
+//            loginType = FACEBOOK
+//            isFbLoggedIn = true
+//            GraphRequest.newMeRequest(fbToken){ jsonObject, _ ->
+//                val email = jsonObject?.optString("email")
+//                newUserData(true, email, loginType)
+//                GameLog.i("FB自動登入，確認Email是否相同 = $email")
+//            }
+//        }
+//
+//        if (!isFbLoggedIn){
+//            //google
+//            val googleAcc = GoogleSignIn.getLastSignedInAccount(MyApplication.instance)
+//            if (googleAcc != null){
+//                GameLog.i("Google自動登入，確認Email是否相同 = ${googleAcc.email}")
+//                loginType = GOOGLE
+//                isGoogleLoggedIn = true
+//                newUserData(true, googleAcc.email, loginType)
+//            }
+//        }
+//
+//        GameLog.i("用GOOGLE帳號 = $isGoogleLoggedIn | 用FB帳號 = $isFbLoggedIn")
+//        if (isGoogleLoggedIn || isFbLoggedIn){
+//            GameLog.i("已自動登入，跳轉至選單頁")
+//            convertToMainActivity()
+//        }
+//    }
 }

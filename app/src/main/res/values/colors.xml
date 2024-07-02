@@ -2,8 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="dark_grey">#2C2C2C</color>
+    <color name="light_grey">#B1B1B1</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="white_75_percent">#BFFFFFFF</color>
+    <color name="brown_85664F">#85664F</color>
     <color name="red">#FD0000</color>
     <color name="game_board_background">#956E61</color>
+    <color name="progress_bar">#2F3A39</color>
+    <color name="mask">#E6787878</color>
+    <color name="menu_list_bg">#3F434C</color>
 
 </resources>

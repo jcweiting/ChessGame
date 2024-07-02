@@ -1,4 +1,4 @@
-package com.joyce.chessgame
+package com.joyce.chessgame.game_board
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -9,6 +9,8 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
+import com.joyce.chessgame.GameLog
+import com.joyce.chessgame.R
 import kotlin.math.abs
 import kotlin.math.hypot
 
@@ -233,7 +235,13 @@ class GameBoard: View {
         val horizontalStoneWinArray = getHorizontalArray(chessArray)
         val straightStoneWinArray = getStraightStoneArray(chessArray)
         val slantingStoneWinArray = getSlantingStoneArray(chessArray)
-        GameLog.i("isChessArrConnectInLine() slantingStoneWinArray = ${Gson().toJson(slantingStoneWinArray)}")
+        GameLog.i(
+            "isChessArrConnectInLine() slantingStoneWinArray = ${
+                Gson().toJson(
+                    slantingStoneWinArray
+                )
+            }"
+        )
 
         var straightCount = 0
         var horizontalCount = 0

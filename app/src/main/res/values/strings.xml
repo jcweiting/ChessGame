@@ -8,4 +8,23 @@
     <string name="default_web_client_id">860839150557-820ekfjfum05t9lof2hqthaspn06t5so.apps.googleusercontent.com</string>
     <string name="google_login">Google帳號登入</string>
     <string name="fb_login">Facebook帳號登入</string>
+    <string name="facebook_app_id">868959785248830</string>
+    <string name="fb_login_protocol_scheme">fb868959785248830</string>
+    <string name="facebook_client_token">ab1c4882024d1adf14b383651d08606a</string>
+    <string name="login_failed">登入失敗</string>
+    <string name="try_later">請稍後再試</string>
+    <string name="confirm">確定</string>
+    <string name="cancel_login">已取消登入</string>
+    <string name="single_mode">單人模式</string>
+    <string name="multiple_mode">連線模式</string>
+    <string name="setting">設定</string>
+    <string name="exit">離開</string>
+    <string name="multiple_lobby">連線大廳</string>
+    <string name="add_room">加入房間</string>
+    <string name="create_room">創建房間</string>
+    <string name="search_room">搜尋房間</string>
+    <string name="rooms">Rooms</string>
+    <string name="current_people">目前人數：</string>
+    <string name="waiting">等待中</string>
+    <string name="room_title">房間名：</string>
 </resources>
