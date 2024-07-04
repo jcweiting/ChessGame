@@ -3,6 +3,7 @@ package com.joyce.chessgame.game_board
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -19,7 +20,7 @@ class GameBoard: View {
     private var mPoints: ArrayList<ArrayList<Point?>> = ArrayList()
     private var mStonesArr: ArrayList<ChessPoint> = ArrayList()
     private var listener: OnGameBoardListener? = null
-    private var gameBoardCells = 10
+    private var gameBoardCells = 12
     private var screenWidth = 0f        //螢幕寬度
     private var screenHeight = 0f       //螢幕高度
     private var dotRadius = 0           //外圓半徑
@@ -39,11 +40,19 @@ class GameBoard: View {
 
     //畫筆
     private lateinit var mNormalPaint: Paint
+    private lateinit var mPaddingPaint: Paint
     private lateinit var mStonePaintBlack: Paint
     private lateinit var mStonePaintWhite: Paint
+    private lateinit var mBackgroundPaint: Paint
+    private lateinit var mBackgroundWhitePaint: Paint
+    private lateinit var mBackgroundTransparentPaint: Paint
 
     //畫筆顏色
     private val mNormalColor = ContextCompat.getColor(context, R.color.black)
+    private val mPaddingColor = Color.TRANSPARENT
+//    private val mPaddingColor = ContextCompat.getColor(context, R.color.red)
+
+    private val gameBoardBgColor = ContextCompat.getColor(context, R.color.brown_85664F)
 
     constructor(context: Context): super(context)
     constructor(context: Context, attrs: AttributeSet): super(context, attrs)
@@ -80,6 +89,14 @@ class GameBoard: View {
             strokeWidth = 5f
         }
 
+        //棋盤格線
+        mPaddingPaint = Paint().apply {
+            color = mPaddingColor
+            isAntiAlias = true
+            style = Paint.Style.STROKE
+            strokeWidth = 5f
+        }
+
         //黑子
         mStonePaintBlack = Paint().apply {
             color = mNormalColor
@@ -93,20 +110,40 @@ class GameBoard: View {
             isAntiAlias = true
             style = Paint.Style.FILL
         }
+
+        //背景(咖啡)
+        mBackgroundPaint = Paint().apply {
+            color = gameBoardBgColor
+            style = Paint.Style.FILL
+        }
+
+        //背景(白色)
+        mBackgroundWhitePaint = Paint().apply {
+            color = ContextCompat.getColor(context, R.color.grey_C5C5C5)
+            style = Paint.Style.FILL
+        }
+
+        //背景(透明)
+        mBackgroundTransparentPaint = Paint().apply {
+            color = mPaddingColor
+            style = Paint.Style.FILL
+        }
     }
 
     private fun initGameBoard() {
-        val squareWidth = width / gameBoardCells    //每個方格的大小
-        dotRadius = squareWidth / 4     //中心點座標
-
         var count = 0
-
-        avgSpaceDifferent = screenWidth / gameBoardCells    //每隔的間距
+        //每個方格的大小
+        val squareWidth = width / gameBoardCells
+        //中心點座標
+        dotRadius = squareWidth / 4
+        //每隔的間距
+        avgSpaceDifferent = screenWidth / gameBoardCells
 
         mPoints.clear()
-        for (i in 0..10){
-            val row = ArrayList<Point?>()   //創建一個新的行
-            for (j in 0..10){
+        for (i in 0..gameBoardCells){
+            //創建一個新的行
+            val row = ArrayList<Point?>()
+            for (j in 0..gameBoardCells){
                 count++
                 val point = Point(screenWidth/gameBoardCells * j, screenHeight/gameBoardCells * i, count)
                 row.add(point)
@@ -116,14 +153,33 @@ class GameBoard: View {
     }
 
     private fun drawShow(canvas: Canvas?) {
+        //棋盤最外圍透明背景
+        canvas?.drawRect(0f, 0f, screenWidth, screenHeight, mBackgroundTransparentPaint)
+
+        //棋盤最內部背景
+        for (i in 1 until gameBoardCells-1) {
+            for (j in 1 until gameBoardCells-1) {
+                val left = screenWidth / gameBoardCells * i
+                val top = screenHeight / gameBoardCells * j
+                val right = screenWidth / gameBoardCells * (i + 1)
+                val bottom = screenHeight / gameBoardCells * (j + 1)
+                val paint = if ((i + j) % 2 == 0) mBackgroundPaint else mBackgroundWhitePaint
+                canvas?.drawRect(left, top, right, bottom, paint)
+            }
+        }
+
         //棋盤格線(直線)
-        for (i in 0 .. gameBoardCells){
-            canvas?.drawLine(screenWidth/gameBoardCells*i, 0f, screenWidth/gameBoardCells*i, screenHeight, mNormalPaint)
+        for (i in 1 until gameBoardCells){
+            canvas?.drawLine(screenWidth/gameBoardCells*i, 0f, screenWidth/gameBoardCells*i, screenHeight/gameBoardCells, mPaddingPaint)
+            canvas?.drawLine(screenWidth/gameBoardCells*i, screenHeight/gameBoardCells, screenWidth/gameBoardCells*i, screenHeight/gameBoardCells*(gameBoardCells-1), mNormalPaint)
+            canvas?.drawLine(screenWidth/gameBoardCells*i, screenWidth/gameBoardCells*(gameBoardCells-1), screenWidth/gameBoardCells*i, screenHeight, mPaddingPaint)
         }
 
         //棋盤格線(橫線)
-        for (j in 0 .. gameBoardCells){
-            canvas?.drawLine(0f, screenHeight/gameBoardCells*j, screenWidth, screenHeight/gameBoardCells*j, mNormalPaint)
+        for (j in 1 until gameBoardCells){
+            canvas?.drawLine(0f, screenHeight/gameBoardCells*j, screenWidth/gameBoardCells, screenHeight/gameBoardCells*j, mPaddingPaint)
+            canvas?.drawLine(screenHeight/gameBoardCells, screenHeight/gameBoardCells*j, screenWidth/gameBoardCells*(gameBoardCells-1), screenHeight/gameBoardCells*j, mNormalPaint)
+            canvas?.drawLine(screenHeight/gameBoardCells*(gameBoardCells-1), screenHeight/gameBoardCells*j, screenWidth, screenHeight/gameBoardCells*j, mPaddingPaint)
         }
     }
 
@@ -163,14 +219,11 @@ class GameBoard: View {
     private fun isWithinBounds(x: Float, y: Float): Boolean {
         val checkX = !(x <= eachHalfWidth || x >= width - eachHalfWidth)
         val checkY = !(y <= eachHalfHeight || y >= (height - eachHalfHeight))
-
-        GameLog.i("checkX = $checkX , checkY = $checkY")
         return !(!checkX || !checkY)
     }
 
     private fun handleTouch(x: Float, y: Float) {
         val nearestPoint = findNearestPoint(x, y)
-
         nearestPoint?.let {
             if (!checkIfSamePosition(it)){
                 placeStone(it)
@@ -439,13 +492,24 @@ class GameBoard: View {
     private fun findNearestPoint(x: Float, y: Float): ChessPoint? {
         val minDistance = width / gameBoardCells / 2    //每一格的半徑
         var nearestPoint: ChessPoint? = null
+        var isContinue = true
 
         for (row in mPoints){
+            if (!isContinue) break
+
             for (point in row){
+                if (!isContinue) break
                 point?.let {
                     val distance = hypot((it.centerX - x).toDouble(), (it.centerY - y).toDouble()).toFloat()    //計算點到觸摸位置的距離
+                    GameLog.i("minDistance = $minDistance, distance = $distance")
+
                     if (distance < minDistance){    //如果這個距離小於之前的最小距離
+                        GameLog.i("小於最小距離")
+                        isContinue = false
                         nearestPoint = ChessPoint(isBlackChess, it.centerX, it.centerY)   //更新最近的點
+
+                    } else {
+                        GameLog.i("大於最小距離")
                     }
                 }
             }

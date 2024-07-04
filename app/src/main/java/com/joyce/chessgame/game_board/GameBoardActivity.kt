@@ -19,16 +19,6 @@ class GameBoardActivity : BaseActivity() {
     private var modeType: String? = null
     private var countDownTimer: CountDownTimer? = null
 
-    override fun onResume() {
-        super.onResume()
-
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

@@ -169,6 +169,7 @@ class LoginActivity : BaseActivity() {
     }
 
     fun convertToMainActivity() {
+        showProgressBar(false)
         val intent = Intent(this, MenuActivity::class.java)
         startActivity(intent)
         finish()
@@ -194,39 +195,4 @@ class LoginActivity : BaseActivity() {
             .setPositiveButton(getString(R.string.confirm), null)
             .show()
     }
-
-//    /**確認是否已登入*/
-//    private fun checkedLoginRecord() {
-//        var isFbLoggedIn = false
-//        var isGoogleLoggedIn = false
-//
-//        //FB
-//        val fbToken = AccessToken.getCurrentAccessToken()
-//        if (fbToken != null && !fbToken.isExpired){
-//            loginType = FACEBOOK
-//            isFbLoggedIn = true
-//            GraphRequest.newMeRequest(fbToken){ jsonObject, _ ->
-//                val email = jsonObject?.optString("email")
-//                newUserData(true, email, loginType)
-//                GameLog.i("FB自動登入，確認Email是否相同 = $email")
-//            }
-//        }
-//
-//        if (!isFbLoggedIn){
-//            //google
-//            val googleAcc = GoogleSignIn.getLastSignedInAccount(MyApplication.instance)
-//            if (googleAcc != null){
-//                GameLog.i("Google自動登入，確認Email是否相同 = ${googleAcc.email}")
-//                loginType = GOOGLE
-//                isGoogleLoggedIn = true
-//                newUserData(true, googleAcc.email, loginType)
-//            }
-//        }
-//
-//        GameLog.i("用GOOGLE帳號 = $isGoogleLoggedIn | 用FB帳號 = $isFbLoggedIn")
-//        if (isGoogleLoggedIn || isFbLoggedIn){
-//            GameLog.i("已自動登入，跳轉至選單頁")
-//            convertToMainActivity()
-//        }
-//    }
 }

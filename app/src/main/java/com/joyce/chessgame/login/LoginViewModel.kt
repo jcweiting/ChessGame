@@ -56,6 +56,8 @@ class LoginViewModel: ViewModel() {
 
     /**確認是否已登入*/
     private fun checkedLoginRecord() {
+        showProgressBarLiveData.value = true
+
         var isFbLoggedIn = false
         var isGoogleLoggedIn = false
 

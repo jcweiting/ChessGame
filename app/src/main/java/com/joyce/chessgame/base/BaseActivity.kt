@@ -17,9 +17,12 @@ open class BaseActivity: AppCompatActivity() {
         super.onResume()
         userData = ShareTool.getUserData()
 
-        if (!userData.email.isNullOrBlank()){
-            userData.active = true
-            addUserData(userData, 1){}
+        if (this !is LoginActivity){
+            GameLog.i("非LoginActivity的base的onResume")
+            if (!userData.email.isNullOrBlank()){
+                userData.active = true
+                addUserData(userData, "from onResume"){}
+            }
         }
     }
 
@@ -27,7 +30,7 @@ open class BaseActivity: AppCompatActivity() {
         super.onPause()
         if (!userData.email.isNullOrBlank()){
             userData.active = false
-            addUserData(userData, 2){}
+            addUserData(userData, "from onPause"){}
         }
     }
 
@@ -37,15 +40,15 @@ open class BaseActivity: AppCompatActivity() {
         userData.timeStamp = System.currentTimeMillis()
         userData.loginType = loginType
         ShareTool.saveUserData(userData)
-        addUserData(userData, 3){
+        addUserData(userData, "from newUserData"){
             if(this is LoginActivity){
                 convertToMainActivity()
             }
         }
     }
 
-    private fun addUserData(user: UserData, from: Int, onComplete:() -> Unit) {
-        GameLog.i("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    private fun addUserData(user: UserData, from: String, onComplete:() -> Unit) {
+        GameLog.i("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         GameLog.i("[$from] addUserData = ${Gson().toJson(userData)}")
 
         val usersCollection = db.collection("users")
@@ -57,15 +60,15 @@ open class BaseActivity: AppCompatActivity() {
 
             if (!snapshot.exists()) {  // 如果文件不存在，新增一筆
                 transaction.set(documentRef, user)
-                GameLog.i("用戶不存在，新增: ${user.email}")
+                GameLog.i("用戶不存在，新增: ${user.email}, [$from] userData = ${Gson().toJson(userData)}")
 
             } else {  // 如果文件存在，更新現有資料
                 transaction.set(documentRef, user)
-                GameLog.i("用戶存在，更新: ${user.email}")
+                GameLog.i("用戶存在，更新: ${user.email}, [$from] userData = ${Gson().toJson(userData)}")
             }
 
         }.addOnSuccessListener {
-            GameLog.i("*****用戶資料更新-成功***** ${Gson().toJson(userData)}")
+            GameLog.i("*****用戶資料更新-成功***** [$from] userData = ${Gson().toJson(userData)}")
             onComplete()
 
         }.addOnFailureListener {
