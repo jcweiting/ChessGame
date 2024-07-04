@@ -14,6 +14,7 @@ import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.R
 import kotlin.math.abs
 import kotlin.math.hypot
+import kotlin.random.Random
 
 class GameBoard: View {
 
@@ -29,6 +30,7 @@ class GameBoard: View {
     private var eachHalfHeight = 0
     private var avgSpaceDifferent = 0.0f //每一格的間距
     private var modeType = ""
+    private var isAutoPlacedChess = false
 
     fun setModeType(modeType: String){
         this.modeType = modeType
@@ -50,8 +52,6 @@ class GameBoard: View {
     //畫筆顏色
     private val mNormalColor = ContextCompat.getColor(context, R.color.black)
     private val mPaddingColor = Color.TRANSPARENT
-//    private val mPaddingColor = ContextCompat.getColor(context, R.color.red)
-
     private val gameBoardBgColor = ContextCompat.getColor(context, R.color.brown_85664F)
 
     constructor(context: Context): super(context)
@@ -60,7 +60,6 @@ class GameBoard: View {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
         initPaint()
         initGameBoard()
         drawShow(canvas)
@@ -111,13 +110,13 @@ class GameBoard: View {
             style = Paint.Style.FILL
         }
 
-        //背景(咖啡)
+        //背景1(咖啡)
         mBackgroundPaint = Paint().apply {
             color = gameBoardBgColor
             style = Paint.Style.FILL
         }
 
-        //背景(白色)
+        //背景2(淺灰)
         mBackgroundWhitePaint = Paint().apply {
             color = ContextCompat.getColor(context, R.color.grey_C5C5C5)
             style = Paint.Style.FILL
@@ -201,6 +200,8 @@ class GameBoard: View {
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+        isAutoPlacedChess = false
+
         if (event?.action == MotionEvent.ACTION_DOWN){
             val x = event.x     //取得觸摸的x座標
             val y = event.y     //取得觸摸的y座標
@@ -224,9 +225,20 @@ class GameBoard: View {
 
     private fun handleTouch(x: Float, y: Float) {
         val nearestPoint = findNearestPoint(x, y)
+
+        if (nearestPoint == null && isAutoPlacedChess){
+            GameLog.i("nearestPoint = null, isAutoPlacedChess = true --> 重新隨機下棋")
+            placeRandomChess()
+        }
+
         nearestPoint?.let {
             if (!checkIfSamePosition(it)){
                 placeStone(it)
+            } else {
+                if (isAutoPlacedChess){
+                    GameLog.i("nearestPoint != null, 但有重複的棋子了 --> 重新隨機下棋")
+                    placeRandomChess()
+                }
             }
         }
     }
@@ -501,15 +513,11 @@ class GameBoard: View {
                 if (!isContinue) break
                 point?.let {
                     val distance = hypot((it.centerX - x).toDouble(), (it.centerY - y).toDouble()).toFloat()    //計算點到觸摸位置的距離
-                    GameLog.i("minDistance = $minDistance, distance = $distance")
 
-                    if (distance < minDistance){    //如果這個距離小於之前的最小距離
-                        GameLog.i("小於最小距離")
+                    //如果這個距離小於之前的最小距離
+                    if (distance < minDistance){
                         isContinue = false
                         nearestPoint = ChessPoint(isBlackChess, it.centerX, it.centerY)   //更新最近的點
-
-                    } else {
-                        GameLog.i("大於最小距離")
                     }
                 }
             }
@@ -521,6 +529,23 @@ class GameBoard: View {
         mStonesArr.clear()
         isBlackChess = true
         invalidate()
+    }
+
+    /**隨機下棋*/
+    fun placeRandomChess(){
+        isAutoPlacedChess = true
+
+        //X
+        val minX = screenWidth/gameBoardCells
+        val maxX = screenWidth-minX
+        val randomX = minX + Random.nextFloat() * (maxX-minX)
+
+        //Y
+        val minY = screenHeight/gameBoardCells
+        val maxY = screenHeight-minY
+        val randomY = minY + Random.nextFloat() * (maxY-minY)
+
+        handleTouch(randomX, randomY)
     }
 
     interface OnGameBoardListener{

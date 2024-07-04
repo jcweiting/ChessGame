@@ -132,7 +132,7 @@ class GameBoardActivity : BaseActivity() {
 
             //倒數計時結束
             override fun onFinish() {
-                //TODO: 自動下子
+                binding.gameBoard.placeRandomChess()
             }
         }
         countDownTimer?.start()
