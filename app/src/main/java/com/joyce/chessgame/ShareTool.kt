@@ -3,10 +3,10 @@ package com.joyce.chessgame
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import androidx.security.crypto.MasterKeys
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.joyce.chessgame.base.UserData
 
 object ShareTool {
 

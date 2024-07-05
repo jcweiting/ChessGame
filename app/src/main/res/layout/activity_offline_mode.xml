@@ -6,14 +6,14 @@
     <data>
         <variable
             name="viewModel"
-            type="com.joyce.chessgame.game_board.GameBoardViewModel" />
+            type="com.joyce.chessgame.offline.OfflineModeViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:background="@drawable/bg_gameboard"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".game_board.GameBoardActivity">
+        tools:context=".offline.OfflineModeActivity">
 
         <ImageView
             android:id="@+id/im_flag_1"
@@ -75,7 +75,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <com.joyce.chessgame.game_board.GameBoard
+        <com.joyce.chessgame.base.GameBoard
             android:id="@+id/game_board"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

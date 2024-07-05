@@ -1,4 +1,4 @@
-package com.joyce.chessgame
+package com.joyce.chessgame.base
 
 data class UserData (
     var active: Boolean = false,

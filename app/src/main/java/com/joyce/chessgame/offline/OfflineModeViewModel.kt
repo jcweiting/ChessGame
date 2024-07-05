@@ -1,11 +1,11 @@
-package com.joyce.chessgame.game_board
+package com.joyce.chessgame.offline
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.joyce.chessgame.R
 import com.joyce.chessgame.Util
 
-class GameBoardViewModel: ViewModel() {
+class OfflineModeViewModel: ViewModel() {
 
     var showWinnerLiveData = MutableLiveData<String>()
     var blackChessActiveLiveData = MutableLiveData<Boolean>()

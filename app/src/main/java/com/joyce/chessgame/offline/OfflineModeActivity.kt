@@ -1,4 +1,4 @@
-package com.joyce.chessgame.game_board
+package com.joyce.chessgame.offline
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -10,20 +10,21 @@ import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.GlobalConfig.Companion.MODE_TYPE
 import com.joyce.chessgame.R
 import com.joyce.chessgame.base.BaseActivity
-import com.joyce.chessgame.databinding.ActivityGameBoardBinding
+import com.joyce.chessgame.base.GameBoard
+import com.joyce.chessgame.databinding.ActivityOfflineModeBinding
 
-class GameBoardActivity : BaseActivity() {
+class OfflineModeActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityGameBoardBinding
-    private lateinit var viewModel: GameBoardViewModel
+    private lateinit var binding: ActivityOfflineModeBinding
+    private lateinit var viewModel: OfflineModeViewModel
     private var modeType: String? = null
     private var countDownTimer: CountDownTimer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel = ViewModelProvider(this)[GameBoardViewModel::class.java]
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_game_board)
+        viewModel = ViewModelProvider(this)[OfflineModeViewModel::class.java]
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_offline_mode)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 

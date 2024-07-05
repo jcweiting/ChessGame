@@ -1,4 +1,4 @@
-package com.joyce.chessgame.game_board
+package com.joyce.chessgame.base
 
 class Point(var centerX: Float, var centerY: Float, var index: Int){
 

@@ -45,7 +45,6 @@ class LoginActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        GameLog.i("LoginActivity onCreate ================================")
 
         viewModel = ViewModelProvider(this)[LoginViewModel::class.java]
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login)

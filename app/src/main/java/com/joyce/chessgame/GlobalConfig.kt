@@ -8,5 +8,8 @@ class GlobalConfig {
         const val SINGLE = "single"
         const val OFFLINE = "offline"
         const val MULTIPLE = "multiple"
+        const val CREATE_ROOM = "createRoom"
+        const val SEARCH_ROOM = "searchRoom"
+
     }
 }

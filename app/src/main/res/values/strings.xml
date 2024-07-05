@@ -29,4 +29,12 @@
     <string name="room_title">房間名：</string>
     <string name="offline_mode">離線模式</string>
     <string name="twenty_seconds">20 秒</string>
+    <string name="enter_room_name">請輸入房間名稱</string>
+    <string name="error">Error</string>
+    <string name="already_has_same_room">已有相同房間</string>
+    <string name="waiting_for_opponent">等待對手中...</string>
+    <string name="back">返回上一頁</string>
+    <string name="my_side">我方\n(黑子)</string>
+    <string name="opposite_side">敵方\n(白子)</string>
+    <string name="first_move">||| 先手 |||</string>
 </resources>

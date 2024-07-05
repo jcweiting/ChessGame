@@ -1,4 +1,4 @@
-package com.joyce.chessgame.game_board
+package com.joyce.chessgame.base
 
 import android.annotation.SuppressLint
 import android.content.Context

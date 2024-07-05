@@ -20,7 +20,10 @@
         android:theme="@style/Theme.Gomoku"
         tools:targetApi="31">
         <activity
-            android:name=".multiple_lobby.MultipleLobbyActivity"
+            android:name=".multiple.MultipleModeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".multiple.MultipleLobbyActivity"
             android:exported="false" />
         <activity
             android:name=".menu.MenuActivity"
@@ -35,7 +38,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".game_board.GameBoardActivity"
+            android:name=".offline.OfflineModeActivity"
             android:exported="true" />
         <activity
             android:name="com.facebook.FacebookActivity"

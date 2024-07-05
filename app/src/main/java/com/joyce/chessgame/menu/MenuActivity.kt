@@ -2,15 +2,16 @@ package com.joyce.chessgame.menu
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.joyce.chessgame.GlobalConfig.Companion.MODE_TYPE
-import com.joyce.chessgame.GlobalConfig.Companion.MULTIPLE
 import com.joyce.chessgame.GlobalConfig.Companion.OFFLINE
 import com.joyce.chessgame.R
 import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityMenuBinding
-import com.joyce.chessgame.game_board.GameBoardActivity
+import com.joyce.chessgame.offline.OfflineModeActivity
+import com.joyce.chessgame.multiple.MultipleLobbyActivity
 
 class MenuActivity : BaseActivity() {
 
@@ -36,23 +37,37 @@ class MenuActivity : BaseActivity() {
 
         //連線模式
         binding.cnsMultipleMode.setOnClickListener {
-            convertToGameBoard(MULTIPLE)
+            startActivity(Intent(this, MultipleLobbyActivity::class.java))
+        }
+
+        //設定
+        binding.cnsSetting.setOnClickListener {
+            //TODO: 設定
+        }
+
+        //離開
+        binding.cnsExit.setOnClickListener {
+            showProgressBar(true)
+            updateUserData(active = false)
         }
     }
 
     private fun convertToGameBoard(modeType: String) {
-        val intent = Intent(this, GameBoardActivity::class.java)
+        val intent = Intent(this, OfflineModeActivity::class.java)
         intent.putExtra(MODE_TYPE, modeType)
         startActivity(intent)
-        finish()
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun showProgressBar(isShowed:Boolean){
+        when(isShowed){
+            true -> {
+                binding.pbMenu.visibility = View.VISIBLE
+                binding.maskMenu.visibility = View.VISIBLE
+            }
+            false -> {
+                binding.pbMenu.visibility = View.GONE
+                binding.maskMenu.visibility = View.GONE
+            }
+        }
     }
-
-    override fun onPause() {
-        super.onPause()
-    }
-
 }
