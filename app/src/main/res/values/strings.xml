@@ -37,4 +37,5 @@
     <string name="my_side">我方\n(黑子)</string>
     <string name="opposite_side">敵方\n(白子)</string>
     <string name="first_move">||| 先手 |||</string>
+    <string name="heading_to_game_board">前往棋盤頁面</string>
 </resources>

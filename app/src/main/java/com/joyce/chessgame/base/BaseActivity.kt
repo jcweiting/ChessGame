@@ -2,6 +2,7 @@ package com.joyce.chessgame.base
 
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import com.google.gson.Gson
 import com.joyce.chessgame.multiple.Actions
 import com.joyce.chessgame.GameLog

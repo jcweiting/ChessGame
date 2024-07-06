@@ -47,6 +47,7 @@ class MultipleModeActivity : BaseActivity() {
     }
 
     private fun showFirstMove() {
+        binding.tvFirstMove.visibility = View.VISIBLE
         //加載進入動畫
         val slideInAnimation = AnimationUtils.loadAnimation(this, R.anim.slide_in_from_left)
         //加載淡出動畫

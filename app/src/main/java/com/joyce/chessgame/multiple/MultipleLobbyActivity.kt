@@ -19,6 +19,7 @@ class MultipleLobbyActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMultipleLobbyBinding
     private lateinit var viewModel: MultipleLobbyViewModel
+    private var roomsAdapter = RoomsListAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +37,11 @@ class MultipleLobbyActivity : BaseActivity() {
     private fun init(){
         binding.edRoomName.filters = editTextMaxLength(15)
         binding.edSearchRoomName.filters = editTextMaxLength(15)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.checkRoomsList()
     }
 
     private fun liveDataCollection() {
@@ -75,6 +81,12 @@ class MultipleLobbyActivity : BaseActivity() {
 
         viewModel.isShowProgressBarLiveData.observe(this){
             showProgressBar(it)
+        }
+
+        //房間列表
+        viewModel.roomsArrayLiveData.observe(this){
+            roomsAdapter.setRoomsArr(it)
+            binding.rvRooms.adapter = roomsAdapter
         }
     }
 
@@ -134,5 +146,4 @@ class MultipleLobbyActivity : BaseActivity() {
             }
         }
     }
-
 }
