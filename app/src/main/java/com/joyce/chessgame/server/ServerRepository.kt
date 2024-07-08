@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.joyce.chessgame.Util
 import com.joyce.chessgame.server.bean.ActionData
 import com.joyce.chessgame.server.bean.GameRoomData
 import com.joyce.chessgame.server.bean.MemberData
@@ -13,6 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Objects
 import java.util.UUID
 
 class ServerRepository {
@@ -21,7 +23,11 @@ class ServerRepository {
         const val CREATE_ROOM = 1L
         const val WAITING_STATUS = 0L
         const val READY_TO_COUNT_DOWN = 2L
-        const val GO_CHESS_BOARD = 2L
+        const val GO_CHESS_BOARD = 4L
+        const val JOIN_GAME = 3L
+        const val PRESS_CHESS = 5L
+        const val HOST = 0L
+        const val USER2 = 1L
     }
     private val roomsList = ArrayList<GameRoomData>()
     private lateinit var onCatchDataFromDataBaseListener: OnCatchDataFromDataBaseListener
@@ -90,6 +96,26 @@ class ServerRepository {
                     var host = ""
                     var time = 0L
                     var roomId = ""
+                    var roomName = ""
+                    var player2 = ""
+                    var x = 0L
+                    var y = 0L
+                    var whoPress = 0L
+                    document.getLong("whoPress")?.let { pressStatus->
+                        whoPress = pressStatus
+                    }
+                    document.getLong("x")?.let { chessX->
+                        x = chessX
+                    }
+                    document.getLong("y")?.let { chessY->
+                        y = chessY
+                    }
+                    document.getString("player2")?.let { name ->
+                        player2 = name
+                    }
+                    document.getString("roomName")?.let { name ->
+                        roomName = name
+                    }
                     document.getString("roomId")?.let { id->
                         roomId = id
                     }
@@ -102,18 +128,72 @@ class ServerRepository {
                     document.getLong("timeStamp")?.let { serverTimeStamp ->
                         time = serverTimeStamp
                     }
-                    val actionData = ActionData(actionType, host, time,roomId,document.id)
+                    val actionData = ActionData(actionType, host, time,roomId,document.id,roomName,player2,x,y,whoPress)
                     actionsList.add(actionData)
                 }
                 for (action in actionsList){
                     if (action.actionType == CREATE_ROOM){
                         createRoom(action)
                     }
+                    if (action.actionType == JOIN_GAME){
+                        joinTheRoom(action)
+                    }
                     if (action.actionType == READY_TO_COUNT_DOWN){
                         handleCountingDown(action)
                     }
+                    if (action.actionType == PRESS_CHESS){
+                        handlePressChess(action)
+                    }
                 }
             }
+    }
+
+    private fun handlePressChess(action: ActionData) {
+        val map = hashMapOf(
+            "x" to action.x,
+            "y" to action.y,
+            "whoPress" to action.whoPress
+        )
+        onCatchDataFromDataBaseListener.onShowLog("房間 : ${action.roomId} \n 下棋 : ${action.whoPress} 位置 : ${action.x}之${action.y}")
+        db.collection("Room_Action")
+            .document(action.roomId)
+            .collection("chessBoard")
+            .document()
+            .set(map,SetOptions.merge())
+        changePressSite(action)
+    }
+
+    private fun changePressSite(action: ActionData) {
+        db.collection("Room_Action")
+            .document(action.roomId)
+            .update("who_turn",if (action.whoPress == HOST) USER2 else HOST)
+        clearActionData(action.documentId)
+    }
+
+    private fun joinTheRoom(action: ActionData) {
+        onCatchDataFromDataBaseListener.onShowLog("${action.player2} 加入房間 ${action.roomId}")
+        var documentId = ""
+        for (room in roomsList){
+            if (room.roomId == action.roomId){
+                documentId = room.documentId
+            }
+        }
+        if (documentId.isEmpty()){
+            onCatchDataFromDataBaseListener.onShowLog("加入房間錯誤")
+            return
+        }
+        db.collection("Rooms")
+            .document(documentId)
+            .update("user2",Util.hideEmail(action.player2))
+
+        db.collection("Room_Action")
+            .document(action.roomId)
+            .update("player2",Util.hideEmail(action.player2))
+
+        onCatchDataFromDataBaseListener.onShowLog("更新Room也更新RoomActions")
+
+
+        clearActionData(action.documentId)
     }
 
     private val job = Job()
@@ -136,14 +216,17 @@ class ServerRepository {
     }
 
     private fun countingDownFinish(roomId: String) {
+        val whoStatus = (0..1).random()
         val roomData = hashMapOf(
             "second" to 0,
-            "msg" to "對弈開始",
-            "status" to GO_CHESS_BOARD
+            "status" to GO_CHESS_BOARD,
+            "who_turn" to whoStatus,
+            "who_first" to whoStatus
         )
         db.collection("Room_Action")
             .document(roomId)
             .set(roomData, SetOptions.merge())
+
     }
 
     private fun updateRoomStatus(roomId: String) {
@@ -163,7 +246,6 @@ class ServerRepository {
     private fun updateSecondToRoom(roomId: String, time: Int) {
         val roomData = hashMapOf(
             "second" to time,
-            "msg" to "對弈即將開始,倒數${time}秒",
             "status" to READY_TO_COUNT_DOWN
         )
         db.collection("Room_Action")
@@ -174,9 +256,10 @@ class ServerRepository {
     private fun createRoom(action: ActionData) {
         val roomData = hashMapOf(
             "roomId" to UUID.randomUUID().toString(),
-            "host" to action.host,
-            "user2" to "",
+            "host" to Util.hideEmail(action.host),
+            "player2" to "",
             "timeStamp" to action.time,
+            "roomName" to action.roomName,
             "status" to 0
         )
         onCatchDataFromDataBaseListener.onShowLog("收到動作 : ${checkAction(action.actionType)}")
@@ -187,6 +270,24 @@ class ServerRepository {
                 onCatchDataFromDataBaseListener.onShowLog("創建房間 : ${roomData["roomId"]} 成功")
             }
         clearActionData(action.documentId)
+        createRoomAction(action, roomData["roomId"].toString())
+    }
+
+    private fun createRoomAction(action: ActionData, roomId: String) {
+        val map = hashMapOf(
+            "roomId" to roomId,
+            "host" to Util.hideEmail(action.host),
+            "player2" to "",
+            "roomName" to action.roomName,
+            "status" to WAITING_STATUS,
+            "second" to 0,
+            "who_turn" to 0,
+            "who_first" to 0
+        )
+        db.collection("Room_Action")
+            .document(roomId)
+            .set(map, SetOptions.merge())
+
     }
 
     private fun checkAction(actionType: Long): String {

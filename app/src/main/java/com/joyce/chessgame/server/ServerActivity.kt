@@ -13,7 +13,7 @@ class ServerActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ServerViewModel
     private lateinit var dataBinding: ActivityServerBinding
-    private var adapter : ServerLogAdapter? = null
+    private var adapter: ServerLogAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,26 +21,24 @@ class ServerActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
 
-        dataBinding = DataBindingUtil.setContentView(this,R.layout.activity_server)
+        dataBinding = DataBindingUtil.setContentView(this, R.layout.activity_server)
         viewModel = ViewModelProvider(this)[ServerViewModel::class.java]
 
         viewModel.processIntent(ServerIntent.OnCreate)
 
-        viewModel.viewState.observe(this){
-            if (it.logList != null){
+        viewModel.viewState.observe(this) {
+            if (it.logList != null) {
                 if (adapter == null) {
                     adapter = ServerLogAdapter(it.logList)
                     dataBinding.logList.adapter = adapter
                     dataBinding.logList.scrollToPosition(it.logList.size - 1)
-                }else{
+                } else {
                     adapter?.updateData(it.logList)
                     dataBinding.logList.scrollToPosition(it.logList.size - 1)
                 }
             }
 
         }
-
-
 
 
     }
