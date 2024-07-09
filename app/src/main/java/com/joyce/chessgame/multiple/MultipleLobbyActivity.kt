@@ -8,10 +8,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.joyce.chessgame.GlobalConfig.Companion.CREATE_ROOM
 import com.joyce.chessgame.GlobalConfig.Companion.ROOM_ID
 import com.joyce.chessgame.GlobalConfig.Companion.SEARCH_ROOM
-import com.joyce.chessgame.GlobalFunction.editTextMaxLength
-import com.joyce.chessgame.GlobalFunction.hideKeyBoard
-import com.joyce.chessgame.GlobalFunction.showAlertDialog
 import com.joyce.chessgame.R
+import com.joyce.chessgame.Util.editTextMaxLength
+import com.joyce.chessgame.Util.hideKeyBoard
+import com.joyce.chessgame.Util.showAlertDialog
 import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityMultipleLobbyBinding
 

@@ -8,9 +8,9 @@ import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.GlobalConfig.Companion.CREATE_ROOM
 import com.joyce.chessgame.GlobalConfig.Companion.SEARCH_ROOM
-import com.joyce.chessgame.GlobalFunction.getStringValue
 import com.joyce.chessgame.R
 import com.joyce.chessgame.ShareTool
+import com.joyce.chessgame.Util
 import com.joyce.chessgame.base.BaseViewModel
 
 class MultipleLobbyViewModel: BaseViewModel() {
@@ -57,7 +57,7 @@ class MultipleLobbyViewModel: BaseViewModel() {
 
     fun checkRoomName(edRoomName: String?, type: String) {
         if (edRoomName.isNullOrBlank()){
-            showAlertLiveData.value = R.string.enter_room_name.getStringValue()
+            showAlertLiveData.value = Util.getString(R.string.enter_room_name)
 
         } else {
             isShowProgressBarLiveData.value = true

@@ -6,8 +6,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
-import com.joyce.chessgame.GlobalFunction.getStringValue
 import com.joyce.chessgame.R
+import com.joyce.chessgame.Util
 import com.joyce.chessgame.base.BaseViewModel
 
 class MultipleModeViewModel: BaseViewModel() {
@@ -51,19 +51,19 @@ class MultipleModeViewModel: BaseViewModel() {
 
             //區分我方黑子or白子
             if (roomAction.whoFirst == 0){
-                showWhoFirstLiveData.value = Pair(R.string.my_side_black.getStringValue(), R.string.opposite_side_white.getStringValue())
+                showWhoFirstLiveData.value = Pair(Util.getString(R.string.my_side_black), Util.getString(R.string.opposite_side_white))
             } else {
-                showWhoFirstLiveData.value = Pair(R.string.my_side_white.getStringValue(), R.string.opposite_side_black.getStringValue())
+                showWhoFirstLiveData.value = Pair(Util.getString(R.string.my_side_white), Util.getString(R.string.opposite_side_black))
             }
         }
     }
 
     /**確認按鈕目前狀態*/
     fun checkButtonType(buttonContent: String) {
-        if (isEnableTvBack && buttonContent == R.string.back.getStringValue()){
+        if (isEnableTvBack && buttonContent == Util.getString(R.string.back)){
             backToPreviousPageLiveData.value = true
 
-        } else if (buttonContent == R.string.give_up.getStringValue()){
+        } else if (buttonContent == Util.getString(R.string.give_up)){
             giveUpGameAlertLiveData.value = true
         }
     }
@@ -79,7 +79,7 @@ class MultipleModeViewModel: BaseViewModel() {
         GameLog.i("roomId = $roomId, RoomAction(original) = ${Gson().toJson(roomAction)}")
 
         if (roomId.isNullOrBlank()){
-            showAlertDialogLiveData.value = R.string.get_some_mistake.getStringValue()
+            showAlertDialogLiveData.value = Util.getString(R.string.get_some_mistake)
             return
         }
 
@@ -87,7 +87,7 @@ class MultipleModeViewModel: BaseViewModel() {
         docRef.addSnapshotListener { snapshots, error ->
             if (error != null){
                 GameLog.i("監聽失敗 = $error")
-                showAlertDialogLiveData.value = R.string.get_some_mistake.getStringValue()
+                showAlertDialogLiveData.value = Util.getString(R.string.get_some_mistake)
                 return@addSnapshotListener
             }
 
@@ -111,12 +111,12 @@ class MultipleModeViewModel: BaseViewModel() {
 
                     } else {
                         GameLog.i("找不到相對應的roomId資料")
-                        showAlertDialogLiveData.value = R.string.get_some_mistake.getStringValue()
+                        showAlertDialogLiveData.value = Util.getString(R.string.get_some_mistake)
                     }
 
                 } else {
                     GameLog.i("找不到相對應的roomId資料")
-                    showAlertDialogLiveData.value = R.string.get_some_mistake.getStringValue()
+                    showAlertDialogLiveData.value = Util.getString(R.string.get_some_mistake)
                 }
             }
         }

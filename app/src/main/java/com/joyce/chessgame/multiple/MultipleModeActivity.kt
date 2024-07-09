@@ -7,11 +7,10 @@ import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.GlobalConfig.Companion.ROOM_ID
-import com.joyce.chessgame.GlobalFunction.showAlertDialog
-import com.joyce.chessgame.GlobalFunction.showAlertDialogWithNegative
 import com.joyce.chessgame.R
+import com.joyce.chessgame.Util.showAlertDialog
+import com.joyce.chessgame.Util.showAlertDialogWithNegative
 import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityMultipleModeBinding
 

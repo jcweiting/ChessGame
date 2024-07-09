@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.joyce.chessgame.GlobalFunction.getStringValue
 import com.joyce.chessgame.R
+import com.joyce.chessgame.Util
 
 class RoomsListAdapter: RecyclerView.Adapter<RoomsListAdapter.ViewHolder>() {
 
@@ -32,18 +32,18 @@ class RoomsListAdapter: RecyclerView.Adapter<RoomsListAdapter.ViewHolder>() {
         val tvPeople = holder.itemView.findViewById<TextView>(R.id.tv_current_people)
         val tvStatus = holder.itemView.findViewById<TextView>(R.id.tv_room_status)
 
-        tvTitle.text = R.string.room_title.getStringValue() + gameRoomData.roomName
+        tvTitle.text = Util.getString(R.string.room_title) + gameRoomData.roomName
 
         if (gameRoomData.user2.isNullOrBlank()){
-            tvPeople.text = R.string.current_people.getStringValue() + "1"
+            tvPeople.text = Util.getString(R.string.current_people) + "1"
         } else {
-            tvPeople.text = R.string.current_people.getStringValue() + "2"
+            tvPeople.text = Util.getString(R.string.current_people) + "2"
         }
 
-        if (gameRoomData.status.toInt() == 0){
-            tvStatus.text = R.string.waiting.getStringValue()
-        } else if (gameRoomData.status.toInt() == 2){
-            tvStatus.text = R.string.heading_to_game_board.getStringValue()
+        if (gameRoomData.status == 0){
+            tvStatus.text = Util.getString(R.string.waiting)
+        } else if (gameRoomData.status == 2){
+            tvStatus.text = Util.getString(R.string.heading_to_game_board)
         }
 
     }
