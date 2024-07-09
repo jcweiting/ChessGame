@@ -7,6 +7,7 @@ import com.google.firebase.firestore.firestore
 import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.R
+import com.joyce.chessgame.ShareTool
 import com.joyce.chessgame.Util
 import com.joyce.chessgame.base.BaseViewModel
 
@@ -20,6 +21,8 @@ class MultipleModeViewModel: BaseViewModel() {
     var showWhoFirstLiveData = MutableLiveData<Pair<String, String>>()
     var giveUpGameAlertLiveData = MutableLiveData<Boolean>()
     var showAlertDialogLiveData = MutableLiveData<String>()
+    var hostTimeRemainLiveData = MutableLiveData<String>()
+    var player2TimeRemainLiveData = MutableLiveData<String>()
     private val db = Firebase.firestore
     private var isEnableTvBack = true
     private var roomAction = RoomAction()
@@ -28,13 +31,20 @@ class MultipleModeViewModel: BaseViewModel() {
 
     fun initView(roomId: String?) {
         waitingOpponentLiveData.value = true
-        checkRoomAction(roomId)
+
+        val actions = Actions(3, roomId, ShareTool.getUserData().email)
+        sentActionNotification(actions){
+            GameLog.i("成功隨機加入房間")
+            //TODO: 換頁
+
+            checkRoomAction(roomId)
+        }
     }
 
     fun sentGameStartToServer(roomId: String?) {
         roomId?.let {
             val actions = Actions(2, it)
-            sentStartGameNotification(actions){
+            sentActionNotification(actions){
                 isClickedStartGame = true
             }
         }
@@ -43,7 +53,7 @@ class MultipleModeViewModel: BaseViewModel() {
     /**倒數10秒*/
     private fun gameStartCountDown() {
         GameLog.i("gameStartCountDown() roomAction.second = ${roomAction.second}")
-        if (roomAction.second > 1){
+        if (roomAction.second >= 1){
             gameStartCountDownLiveData.value = roomAction.second.toString()
         } else {
             isEnableTvBack = true
@@ -97,6 +107,7 @@ class MultipleModeViewModel: BaseViewModel() {
 
                     if (data != null){
                         roomAction = mapToRoomAction(data)
+                        GameLog.i("checkRoomAction() --> roomAction = ${Gson().toJson(roomAction)}")
 
                         //顯示「開始對弈」按鈕
                         if (roomAction.status == 0 && !roomAction.player2.isNullOrEmpty()){
@@ -139,18 +150,28 @@ class MultipleModeViewModel: BaseViewModel() {
     }
 
     fun startCountDownTimer(){
+        if (roomAction.status != 4) return
+
+        val currentUserEmail = ShareTool.getUserData().email
+
         countDownTimer?.cancel()
         countDownTimer = object : CountDownTimer(20000, 1000){
             override fun onTick(millisUntilFinished: Long) {
-                if (roomAction.whoTurn == 0) {
+                val secondRemaining = millisUntilFinished/1000
 
+                currentUserEmail?.let {
+                    //房主下棋計時
+                    if (roomAction.whoTurn == 0 && roomAction.host == Util.hideEmail(it)) {
+                        hostTimeRemainLiveData.value = secondRemaining.toString()
 
-                } else {
-
-
+                        //對方下棋計時
+                    } else {
+                        player2TimeRemainLiveData.value = secondRemaining.toString()
+                    }
                 }
             }
 
+            //倒數結束, 自動下棋
             override fun onFinish() {
                 if (roomAction.whoTurn == 0) {
 

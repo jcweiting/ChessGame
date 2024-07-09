@@ -34,7 +34,12 @@ class MultipleLobbyViewModel: BaseViewModel() {
             hideSearchRoomContentLiveData.value = true
 
         } else {
-
+//            //TODO: 隨機從列表搜尋一個roomId加入
+//            val actions = Actions(3, "333", ShareTool.getUserData().email)
+//            sentActionNotification(actions){
+//                GameLog.i("成功隨機加入房間")
+//                //TODO: 換頁
+//            }
         }
 
         if (isCreateRoom){
@@ -141,17 +146,14 @@ class MultipleLobbyViewModel: BaseViewModel() {
 
     private fun checkRoomId(roomName: String) {
         var roomId = ""
-        GameLog.i("checkRoomId() --> roomName = $roomName")
-        GameLog.i("checkRoomId() --> roomsArray = ${Gson().toJson(roomsArray)}")
-        for (roomData in roomsArray){
-            if (roomData.roomName == roomName){
-                roomData.roomId?.let { roomId = it }
-                break
+        val currentUserEmail = ShareTool.getUserData().email
+        currentUserEmail?.let {
+            for (roomData in roomsArray){
+                if (roomData.host == Util.hideEmail(currentUserEmail) && roomData.roomName == roomName){
+                    roomData.roomId?.let { roomId = it }
+                    break
+                }
             }
-//            if (roomData.host == ShareTool.getUserData().email && roomData.roomName == roomName){
-//                roomData.roomId?.let { roomId = it }
-//                break
-//            }
         }
 
         isCreatedRoomsName = ""

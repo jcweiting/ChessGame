@@ -32,7 +32,7 @@ open class BaseViewModel: ViewModel() {
         }
     }
 
-    fun sentStartGameNotification(actions: Actions, onComplete: () -> Unit){
+    fun sentActionNotification(actions: Actions, onComplete: () -> Unit){
         val actionCollection = db.collection("Actions")
         actions.roomId?.let { roomName ->
             db.runTransaction{ transaction ->
