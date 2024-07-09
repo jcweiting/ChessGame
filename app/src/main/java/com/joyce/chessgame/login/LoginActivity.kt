@@ -28,6 +28,7 @@ import com.joyce.chessgame.R
 import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityLoginBinding
 import com.joyce.chessgame.menu.MenuActivity
+import com.joyce.chessgame.server.ServerActivity
 import org.json.JSONException
 
 class LoginActivity : BaseActivity() {
