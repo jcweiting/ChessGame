@@ -34,8 +34,15 @@
     <string name="already_has_same_room">已有相同房間</string>
     <string name="waiting_for_opponent">等待對手中...</string>
     <string name="back">返回上一頁</string>
-    <string name="my_side">我方\n(黑子)</string>
-    <string name="opposite_side">敵方\n(白子)</string>
+    <string name="my_side_black">我方\n(黑子)</string>
+    <string name="my_side_white">我方\n(白子)</string>
+    <string name="opposite_side_white">敵方\n(白子)</string>
+    <string name="opposite_side_black">敵方\n(黑子)</string>
     <string name="first_move">||| 先手 |||</string>
     <string name="heading_to_game_board">前往棋盤頁面</string>
+    <string name="game_start">開始對弈</string>
+    <string name="give_up">放棄比賽</string>
+    <string name="sure_to_quit">是否確定要退出遊戲?</string>
+    <string name="canel">取消\n</string>
+    <string name="get_some_mistake">出現錯誤，請稍後重新再試。</string>
 </resources>

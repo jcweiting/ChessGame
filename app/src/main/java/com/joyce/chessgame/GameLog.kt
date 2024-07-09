@@ -8,4 +8,8 @@ object GameLog {
         Log.i("joyce", content)
 
     }
+
+    fun user(content: String){
+        Log.i("joyce user", content)
+    }
 }

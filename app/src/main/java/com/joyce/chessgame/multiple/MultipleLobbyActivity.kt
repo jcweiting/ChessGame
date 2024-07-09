@@ -6,12 +6,12 @@ import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.joyce.chessgame.GlobalConfig.Companion.CREATE_ROOM
+import com.joyce.chessgame.GlobalConfig.Companion.ROOM_ID
 import com.joyce.chessgame.GlobalConfig.Companion.SEARCH_ROOM
 import com.joyce.chessgame.GlobalFunction.editTextMaxLength
 import com.joyce.chessgame.GlobalFunction.hideKeyBoard
 import com.joyce.chessgame.GlobalFunction.showAlertDialog
 import com.joyce.chessgame.R
-import com.joyce.chessgame.ShareTool
 import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityMultipleLobbyBinding
 
@@ -71,10 +71,6 @@ class MultipleLobbyActivity : BaseActivity() {
             showAlertDialog(this, getString(R.string.error), it)
         }
 
-        viewModel.isCreateRoomLiveData.observe(this){
-            createRoom(it)
-        }
-
         viewModel.isSearchRoomLiveData.observe(this){
             //TODO: 開始搜尋房間
         }
@@ -87,6 +83,12 @@ class MultipleLobbyActivity : BaseActivity() {
         viewModel.roomsArrayLiveData.observe(this){
             roomsAdapter.setRoomsArr(it)
             binding.rvRooms.adapter = roomsAdapter
+        }
+
+        viewModel.isCreateRoomsSuccessLiveData.observe(this){ roomId ->
+            val intent = Intent(this, MultipleModeActivity::class.java)
+            intent.putExtra(ROOM_ID, roomId)
+            startActivity(intent)
         }
     }
 
@@ -123,15 +125,6 @@ class MultipleLobbyActivity : BaseActivity() {
         binding.edRoomName.text = null
         binding.cnsRoomName.visibility = View.GONE
         binding.cnsCreateRoom.setBackgroundResource(0)
-    }
-
-    private fun createRoom(roomName: String) {
-        val actions = Actions(1, ShareTool.getUserData().email, System.currentTimeMillis(), roomName)
-        createRooms(actions){
-            hideCreateRoom()
-            showProgressBar(false)
-            startActivity(Intent(this, MultipleModeActivity::class.java))
-        }
     }
 
     private fun showProgressBar(isShowed:Boolean){

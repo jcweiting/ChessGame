@@ -86,6 +86,10 @@ class LoginViewModel: ViewModel() {
             }
         }
 
+        if (!isFbLoggedIn && !isGoogleLoggedIn){
+            showProgressBarLiveData.value = false
+        }
+
         GameLog.i("用GOOGLE帳號 = $isGoogleLoggedIn | 用FB帳號 = $isFbLoggedIn")
     }
 }

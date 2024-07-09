@@ -58,7 +58,7 @@
 
         <TextView
             android:id="@+id/tv_multiple_me"
-            android:text="@string/my_side"
+            android:text="@string/my_side_black"
             android:textSize="18sp"
             android:textStyle="bold"
             android:background="@drawable/bg_player_active"
@@ -93,7 +93,7 @@
 
         <TextView
             android:id="@+id/tv_multiple_other"
-            android:text="@string/opposite_side"
+            android:text="@string/opposite_side_white"
             android:textSize="18sp"
             android:textStyle="bold"
             android:background="@drawable/bg_player_inactive"
@@ -128,6 +128,7 @@
 
         <TextView
             android:id="@+id/tv_first_move"
+            android:visibility="gone"
             android:padding="20dp"
             android:text="@string/first_move"
             android:gravity="center"
@@ -167,7 +168,6 @@
 
             <ProgressBar
                 android:id="@+id/pb_multiple"
-                android:visibility="visible"
                 android:indeterminateTint="@color/progress_bar"
                 android:layout_marginTop="10dp"
                 app:layout_constraintTop_toBottomOf="@+id/tv_waiting"
@@ -196,14 +196,64 @@
                 android:textColor="@color/white"
                 android:background="@drawable/bg_brown1_radius10"
                 android:gravity="center"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cns_game_start"
+            android:visibility="gone"
+            android:background="@drawable/bg_brown1_radius15"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tv_game_start"
+                android:textSize="22sp"
+                android:text="@string/game_start"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/im_game_start"
+                app:layout_constraintBottom_toBottomOf="@+id/im_game_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <ImageView
+                android:id="@+id/im_game_start"
+                android:src="@drawable/ic_start"
+                android:layout_marginStart="10dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toRightOf="@+id/tv_game_start"
+                android:layout_width="50dp"
+                android:layout_height="50dp"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/tv_game_start_count_down"
+            android:visibility="gone"
+            android:background="@drawable/bg_blue_oval"
+            android:textColor="@color/white"
+            android:textSize="60sp"
+            android:text="10"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_width="130dp"
+            android:layout_height="130dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

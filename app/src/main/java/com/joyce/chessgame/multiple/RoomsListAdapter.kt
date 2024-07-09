@@ -32,8 +32,13 @@ class RoomsListAdapter: RecyclerView.Adapter<RoomsListAdapter.ViewHolder>() {
         val tvPeople = holder.itemView.findViewById<TextView>(R.id.tv_current_people)
         val tvStatus = holder.itemView.findViewById<TextView>(R.id.tv_room_status)
 
-        tvTitle.text = R.string.room_title.getStringValue() + gameRoomData.roomId
-        tvPeople.text = R.string.current_people.getStringValue() + gameRoomData.user2
+        tvTitle.text = R.string.room_title.getStringValue() + gameRoomData.roomName
+
+        if (gameRoomData.user2.isNullOrBlank()){
+            tvPeople.text = R.string.current_people.getStringValue() + "1"
+        } else {
+            tvPeople.text = R.string.current_people.getStringValue() + "2"
+        }
 
         if (gameRoomData.status.toInt() == 0){
             tvStatus.text = R.string.waiting.getStringValue()

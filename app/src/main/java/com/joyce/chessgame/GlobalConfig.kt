@@ -10,6 +10,6 @@ class GlobalConfig {
         const val MULTIPLE = "multiple"
         const val CREATE_ROOM = "createRoom"
         const val SEARCH_ROOM = "searchRoom"
-
+        const val ROOM_ID = "roomId"
     }
 }

@@ -23,6 +23,25 @@ object GlobalFunction {
             .show()
     }
 
+    fun showAlertDialogWithNegative(context: Context, title: String?, msg: String?, haveNo: Boolean, positiveContent: String, negativeContent: String, callback: (Boolean) -> Unit) {
+        val alert = android.app.AlertDialog.Builder(context)
+            .setTitle(title)
+            .setMessage(msg)
+            .setCancelable(false)
+            .setPositiveButton(positiveContent) { dialog, _ ->
+                callback(true)
+                dialog.dismiss()
+            }
+
+        if (haveNo){
+            alert.setNegativeButton(negativeContent) { dialog, _ ->
+                callback(false)
+                dialog.dismiss()
+            }
+        }
+        alert.create().show()
+    }
+
     fun Int.getStringValue(): String{
         return getContext().getString(this)
     }
