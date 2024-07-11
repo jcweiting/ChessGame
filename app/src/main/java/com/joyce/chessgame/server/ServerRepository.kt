@@ -331,7 +331,7 @@ class ServerRepository {
                     document.getString("roomId")?.let { roomId2 ->
                         roomId = roomId2
                     }
-                    document.getString("user2")?.let { user2Email ->
+                    document.getString("player2")?.let { user2Email ->
                         user2 = user2Email
                     }
                     document.getLong("status")?.let { roomStatus ->
