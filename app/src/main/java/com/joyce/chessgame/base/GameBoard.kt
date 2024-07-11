@@ -11,6 +11,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
+import com.joyce.chessgame.GlobalConfig.Companion.MULTIPLE
 import com.joyce.chessgame.R
 import kotlin.math.abs
 import kotlin.math.hypot
@@ -21,6 +22,7 @@ class GameBoard: View {
     private var mPoints: ArrayList<ArrayList<Point?>> = ArrayList()
     private var mStonesArr: ArrayList<ChessPoint> = ArrayList()
     private var listener: OnGameBoardListener? = null
+    private var multipleListener: OnMultipleModeListener? = null
     private var gameBoardCells = 12
     private var screenWidth = 0f        //螢幕寬度
     private var screenHeight = 0f       //螢幕高度
@@ -38,6 +40,10 @@ class GameBoard: View {
 
     fun setGameBoardListener(listener: OnGameBoardListener){
         this.listener = listener
+    }
+
+    fun setMultipleModeListener(listener: OnMultipleModeListener){
+        this.multipleListener = listener
     }
 
     //畫筆
@@ -261,11 +267,44 @@ class GameBoard: View {
         //將棋子座標加到列表中
         mStonesArr.add(point)
 
+        //將座標傳遞給SERVER
+        if (modeType == MULTIPLE){
+            multipleListener?.onChessLocation(isBlackChess, getChessXLocation(point.centerX),getChessYLocation(point.centerY))
+        }
+
         if (checkConnectInLine()){
             listener?.onConnectInLine(isBlackChess)
         } else {
             updateGameBoard()
         }
+    }
+
+    private fun getChessXLocation(chessX: Float): Long{
+        var x: Long = 0
+        val eachWidth = screenWidth / gameBoardCells
+
+        for (i in 0 .. gameBoardCells){
+            if (chessX == eachWidth*i){
+                x = i.toLong()
+                break
+            }
+        }
+
+        return x
+    }
+
+    private fun getChessYLocation(chessY: Float): Long{
+        var y: Long = 0
+        val eachHeight = screenHeight / gameBoardCells
+
+        for (i in 0 .. gameBoardCells){
+            if (chessY == eachHeight*i){
+                y = i.toLong()
+                break
+            }
+        }
+
+        return y
     }
 
     private fun updateGameBoard(){
@@ -552,5 +591,9 @@ class GameBoard: View {
         fun onChangePlayer(isBlackChess: Boolean)
         fun onConnectInLine(isBlackChess: Boolean)
         fun onStartCountDown()
+    }
+
+    interface OnMultipleModeListener{
+        fun onChessLocation(isBlackChess: Boolean, x: Long, y: Long)
     }
 }

@@ -24,6 +24,7 @@ class MultipleLobbyViewModel: BaseViewModel() {
     var isShowProgressBarLiveData = MutableLiveData<Boolean>()
     var roomsArrayLiveData = MutableLiveData<ArrayList<GameRoomData>>()
     var isCreateRoomsSuccessLiveData = MutableLiveData<String>()
+    var isSuccessAddRoomLiveData = MutableLiveData<String>()
     private val roomsArray = ArrayList<GameRoomData>()
     private val db = Firebase.firestore
     private var isCreatedRoomsName = ""
@@ -32,14 +33,10 @@ class MultipleLobbyViewModel: BaseViewModel() {
         if (isAddRoom){
             hideCreateRoomViewLiveData.value = true
             hideSearchRoomContentLiveData.value = true
+            pickRandomRoom()
 
         } else {
-//            //TODO: 隨機從列表搜尋一個roomId加入
-//            val actions = Actions(3, "333", ShareTool.getUserData().email)
-//            sentActionNotification(actions){
-//                GameLog.i("成功隨機加入房間")
-//                //TODO: 換頁
-//            }
+
         }
 
         if (isCreateRoom){
@@ -57,6 +54,25 @@ class MultipleLobbyViewModel: BaseViewModel() {
 
         } else {
             hideSearchRoomContentLiveData.value = true
+        }
+    }
+
+    private fun pickRandomRoom() {
+        val availableRoomsArr = ArrayList<GameRoomData>()
+        for (i in 0 until roomsArray.size){
+            if (roomsArray[i].user2.isNullOrBlank()){
+                availableRoomsArr.add(roomsArray[i])
+            }
+        }
+
+        val randomInt = (0 until availableRoomsArr.size).random()
+        val randomRoomId = availableRoomsArr[randomInt].roomId
+        GameLog.i("randomRoom = $randomInt, randomRoom = ${Gson().toJson(availableRoomsArr[randomInt])}")
+
+        val actions = Actions(3, randomRoomId, ShareTool.getUserData().email)
+        sentActionNotification(actions){
+            GameLog.i("成功隨機加入房間")
+            isSuccessAddRoomLiveData.value = randomRoomId
         }
     }
 

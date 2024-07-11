@@ -6,8 +6,7 @@ import android.os.CountDownTimer
 import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.joyce.chessgame.GameLog
-import com.joyce.chessgame.GlobalConfig.Companion.MODE_TYPE
+import com.joyce.chessgame.GlobalConfig.Companion.OFFLINE
 import com.joyce.chessgame.R
 import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.base.GameBoard
@@ -17,7 +16,6 @@ class OfflineModeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityOfflineModeBinding
     private lateinit var viewModel: OfflineModeViewModel
-    private var modeType: String? = null
     private var countDownTimer: CountDownTimer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +26,6 @@ class OfflineModeActivity : BaseActivity() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        modeType = intent.getStringExtra(MODE_TYPE)
         init()
 
         buttonCollection()
@@ -37,11 +34,7 @@ class OfflineModeActivity : BaseActivity() {
     }
 
     private fun init(){
-        GameLog.i("play mode = $modeType")
-        modeType?.let {
-            binding.gameBoard.setModeType(it)
-        }
-
+        binding.gameBoard.setModeType(OFFLINE)
         startCountDownTimer()
     }
 

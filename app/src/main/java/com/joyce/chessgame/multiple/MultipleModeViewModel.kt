@@ -3,11 +3,13 @@ package com.joyce.chessgame.multiple
 import android.os.CountDownTimer
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.core.InFilter
 import com.google.firebase.firestore.firestore
 import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
+import com.joyce.chessgame.GlobalConfig.Companion.HOST
+import com.joyce.chessgame.GlobalConfig.Companion.PLAYER2
 import com.joyce.chessgame.R
-import com.joyce.chessgame.ShareTool
 import com.joyce.chessgame.Util
 import com.joyce.chessgame.base.BaseViewModel
 
@@ -15,38 +17,38 @@ class MultipleModeViewModel: BaseViewModel() {
 
     var backToPreviousPageLiveData = MutableLiveData<Boolean>()
     var waitingOpponentLiveData = MutableLiveData<Boolean>()
-    var startGameLiveData = MutableLiveData<Boolean>()
+    var startGameLiveData = MutableLiveData<Pair<String?, String?>>()
     var gameStartCountDownLiveData = MutableLiveData<String>()
     var isFinishedCountDownLiveData = MutableLiveData<Boolean>()
-    var showWhoFirstLiveData = MutableLiveData<Pair<String, String>>()
     var giveUpGameAlertLiveData = MutableLiveData<Boolean>()
     var showAlertDialogLiveData = MutableLiveData<String>()
     var hostTimeRemainLiveData = MutableLiveData<String>()
     var player2TimeRemainLiveData = MutableLiveData<String>()
+    var hostTurnLiveData = MutableLiveData<Boolean>()
+    var player2TurnLiveData = MutableLiveData<Boolean>()
+    var whoFirstLiveData = MutableLiveData<String>()
+    var whoFirstTextLiveData = MutableLiveData<Pair<String, String>>()
+    var autoPlaceChessLiveData = MutableLiveData<Boolean>()
+    var showWinnerLiveData = MutableLiveData<String>()
     private val db = Firebase.firestore
     private var isEnableTvBack = true
     private var roomAction = RoomAction()
-    private var isClickedStartGame = false
     private var countDownTimer: CountDownTimer? = null
+    private var isInitial = true
+    private var character = ""
 
-    fun initView(roomId: String?) {
+    fun initView(roomId: String?, character: String?) {
         waitingOpponentLiveData.value = true
-
-        val actions = Actions(3, roomId, ShareTool.getUserData().email)
-        sentActionNotification(actions){
-            GameLog.i("成功隨機加入房間")
-            //TODO: 換頁
-
-            checkRoomAction(roomId)
+        checkRoomAction(roomId)
+        character?.let {
+            this.character = it
         }
     }
 
     fun sentGameStartToServer(roomId: String?) {
         roomId?.let {
             val actions = Actions(2, it)
-            sentActionNotification(actions){
-                isClickedStartGame = true
-            }
+            sentActionNotification(actions){}
         }
     }
 
@@ -58,13 +60,6 @@ class MultipleModeViewModel: BaseViewModel() {
         } else {
             isEnableTvBack = true
             isFinishedCountDownLiveData.value = true
-
-            //區分我方黑子or白子
-            if (roomAction.whoFirst == 0){
-                showWhoFirstLiveData.value = Pair(Util.getString(R.string.my_side_black), Util.getString(R.string.opposite_side_white))
-            } else {
-                showWhoFirstLiveData.value = Pair(Util.getString(R.string.my_side_white), Util.getString(R.string.opposite_side_black))
-            }
         }
     }
 
@@ -110,14 +105,21 @@ class MultipleModeViewModel: BaseViewModel() {
                         GameLog.i("checkRoomAction() --> roomAction = ${Gson().toJson(roomAction)}")
 
                         //顯示「開始對弈」按鈕
-                        if (roomAction.status == 0 && !roomAction.player2.isNullOrEmpty()){
+                        if (character == HOST && roomAction.status == 0 && !roomAction.player2.isNullOrEmpty()){
                             isEnableTvBack = false
-                            startGameLiveData.value = true
-                        }
+                            startGameLiveData.value = Pair(roomAction.roomName, roomAction.player2)
 
-                        //開始倒數10秒
-                        if (roomAction.status == 2){
+                            //倒數10秒
+                        } else if (roomAction.status == 2){
                             gameStartCountDown()
+                            if (character == PLAYER2) {
+                                waitingOpponentLiveData.value = false
+                            }
+
+                            //開始遊戲
+                        } else if (roomAction.status == 4){
+                            checkPlayerTurn()
+                            if (isInitial) checkWhoTurn() else startCountDownTimer()
                         }
 
                     } else {
@@ -149,39 +151,85 @@ class MultipleModeViewModel: BaseViewModel() {
         )
     }
 
+    private fun checkPlayerTurn() {
+        if (roomAction.whoTurn == 0){
+            hostTurnLiveData.value = true
+        } else {
+            player2TurnLiveData.value = true
+        }
+    }
+
+    private fun checkWhoTurn() {
+        if (roomAction.whoFirst == 0){
+            if (character == HOST){
+                isFirstMove(true)
+            } else {
+                isFirstMove(false)
+            }
+
+        } else {
+            if (character == PLAYER2){
+                isFirstMove(true)
+            } else {
+                isFirstMove(false)
+            }
+        }
+    }
+
+    private fun isFirstMove(isFirstMove: Boolean){
+        if (isFirstMove){
+            whoFirstLiveData.value = Util.getString(R.string.first_move)
+            whoFirstTextLiveData.value = Pair(Util.getString(R.string.my_side_black), Util.getString(R.string.opposite_side_white))
+        } else {
+            whoFirstLiveData.value = Util.getString(R.string.second_move)
+            whoFirstTextLiveData.value = Pair(Util.getString(R.string.my_side_white), Util.getString(R.string.opposite_side_black))
+        }
+    }
+
     fun startCountDownTimer(){
-        if (roomAction.status != 4) return
-
-        val currentUserEmail = ShareTool.getUserData().email
-
         countDownTimer?.cancel()
-        countDownTimer = object : CountDownTimer(20000, 1000){
+        countDownTimer = object : CountDownTimer(21000, 1000){
             override fun onTick(millisUntilFinished: Long) {
                 val secondRemaining = millisUntilFinished/1000
 
-                currentUserEmail?.let {
-                    //房主下棋計時
-                    if (roomAction.whoTurn == 0 && roomAction.host == Util.hideEmail(it)) {
-                        hostTimeRemainLiveData.value = secondRemaining.toString()
-
-                        //對方下棋計時
-                    } else {
-                        player2TimeRemainLiveData.value = secondRemaining.toString()
-                    }
+                if (roomAction.whoTurn == 0) {
+                    hostTimeRemainLiveData.value = secondRemaining.toString()
+                } else {
+                    player2TimeRemainLiveData.value = secondRemaining.toString()
                 }
             }
 
             //倒數結束, 自動下棋
             override fun onFinish() {
-                if (roomAction.whoTurn == 0) {
-
-
-                } else {
-
-
-                }
+                autoPlaceChessLiveData.value = true
             }
         }
         countDownTimer?.start()
+        isInitial = false
+    }
+
+    fun gameEnd(blackChess: Boolean, mySide: String, player2Side: String) {
+        countDownTimer?.cancel()
+        if (blackChess){
+            if (roomAction.whoFirst == 0){
+                showWinnerLiveData.value = mySide
+            } else {
+                showWinnerLiveData.value = player2Side
+            }
+        } else {
+            if (roomAction.whoFirst == 0){
+                showWinnerLiveData.value = mySide
+            } else {
+                showWinnerLiveData.value = player2Side
+            }
+        }
+    }
+
+    fun sentChessLocation(blackChess: Boolean, x: Long, y: Long) {
+        GameLog.i("blackChess = $blackChess, roomAction.whoTurn = ${roomAction.whoTurn}")
+        val actions = Actions(5, x, y, roomAction.whoTurn.toLong(), roomAction.roomId)
+        sentActionNotification(actions){
+            GameLog.i("座標更新完成")
+        }
     }
 }
