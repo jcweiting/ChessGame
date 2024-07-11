@@ -44,6 +44,7 @@ object Util {
 
     fun showAlertDialog(context: Context, title: String, msg: String){
         AlertDialog.Builder(context)
+            .setCancelable(false)
             .setTitle(title)
             .setMessage(msg)
             .setPositiveButton(getString(R.string.confirm), null)

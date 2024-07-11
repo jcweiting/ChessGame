@@ -105,8 +105,6 @@ class MultipleModeViewModel: BaseViewModel() {
 
                         //遊戲準備開始
                         if (roomAction.status == 0 && !roomAction.player2.isNullOrEmpty()){
-                            isEnableTvBack = false
-
                             val opponent = if (character == HOST) roomAction.player2 else roomAction.host
                             setRoomInfoLiveData.value = Pair(roomAction.roomName, opponent)
 
@@ -118,7 +116,10 @@ class MultipleModeViewModel: BaseViewModel() {
 
                             //倒數10秒
                         } else if (roomAction.status == 2){
-                            if (character == PLAYER2) isShowWaitingDialog.value = false
+                            if (character == PLAYER2) {
+                                isShowWaitingDialog.value = false
+                            }
+                            isEnableTvBack = false
                             updateBackBtnStyleLiveData.value = Pair(R.drawable.bg_grey_radius10, Util.getString(R.string.back))
                             gameStartCountDown()
 

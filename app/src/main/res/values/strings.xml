@@ -50,4 +50,5 @@
     <string name="room_name">房間：</string>
     <string name="oppsite_player">對手：</string>
     <string name="gaming">對弈進行中</string>
+    <string name="cannt_find_the_room">查無此房間</string>
 </resources>

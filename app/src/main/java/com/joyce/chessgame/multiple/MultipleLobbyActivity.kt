@@ -74,12 +74,9 @@ class MultipleLobbyActivity : BaseActivity() {
             showAlertDialog(this, getString(R.string.error), it)
         }
 
-        viewModel.isSearchRoomLiveData.observe(this){
-            //TODO: 開始搜尋房間
-        }
-
         viewModel.isShowProgressBarLiveData.observe(this){
             showProgressBar(it)
+            hideKeyBoard(this)
         }
 
         //房間列表

@@ -20,7 +20,6 @@ class MultipleLobbyViewModel: BaseViewModel() {
     var hideCreateRoomViewLiveData = MutableLiveData<Boolean>()
     var hideSearchRoomContentLiveData = MutableLiveData<Boolean>()
     var showAlertLiveData = MutableLiveData<String>()
-    var isSearchRoomLiveData = MutableLiveData<String>()
     var isShowProgressBarLiveData = MutableLiveData<Boolean>()
     var roomsArrayLiveData = MutableLiveData<ArrayList<GameRoomData>>()
     var isCreateRoomsSuccessLiveData = MutableLiveData<String>()
@@ -34,7 +33,6 @@ class MultipleLobbyViewModel: BaseViewModel() {
             hideCreateRoomViewLiveData.value = true
             hideSearchRoomContentLiveData.value = true
             pickRandomRoom()
-
         } else {
 
         }
@@ -42,16 +40,13 @@ class MultipleLobbyViewModel: BaseViewModel() {
         if (isCreateRoom){
             showCreateRoomViewLiveData.value = true
             hideSearchRoomContentLiveData.value = true
-
         } else {
             hideCreateRoomViewLiveData.value = true
-
         }
 
         if (isSearchRoom){
             showSearchRoomContentLiveData.value = true
             hideCreateRoomViewLiveData.value = true
-
         } else {
             hideSearchRoomContentLiveData.value = true
         }
@@ -77,7 +72,8 @@ class MultipleLobbyViewModel: BaseViewModel() {
     fun addAvailableRoom(roomId: String){
         val actions = Actions(3, roomId, ShareTool.getUserData().email)
         sentActionNotification(actions){
-            GameLog.i("成功隨機加入房間")
+            GameLog.i("成功加入房間 roomId = $roomId")
+            isShowProgressBarLiveData.value = false
             isSuccessAddRoomLiveData.value = roomId
         }
     }
@@ -90,7 +86,30 @@ class MultipleLobbyViewModel: BaseViewModel() {
             isShowProgressBarLiveData.value = true
             when(type){
                 CREATE_ROOM -> createGameRoom(edRoomName)
-                SEARCH_ROOM -> isSearchRoomLiveData.value = edRoomName
+                SEARCH_ROOM -> searchRoomName(edRoomName)
+            }
+        }
+    }
+
+    /**搜尋房間*/
+    private fun searchRoomName(edRoomName: String) {
+        val availableRoomsArr = ArrayList<GameRoomData>()
+        for (i in 0 until roomsArray.size){
+            if (roomsArray[i].player2.isNullOrBlank()){
+                availableRoomsArr.add(roomsArray[i])
+            }
+        }
+
+        for (i in 0 until availableRoomsArr.size){
+            if (availableRoomsArr[i].roomName == edRoomName){
+                availableRoomsArr[i].roomId?.let { addAvailableRoom(it) }
+                break
+
+            } else {
+                if (i == availableRoomsArr.size-1){
+                    isShowProgressBarLiveData.value = false
+                    showAlertLiveData.value = Util.getString(R.string.cannt_find_the_room)
+                }
             }
         }
     }
