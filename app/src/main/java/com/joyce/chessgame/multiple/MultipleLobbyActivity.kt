@@ -5,7 +5,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.joyce.chessgame.GlobalConfig.Companion.CHARACTER
 import com.joyce.chessgame.GlobalConfig.Companion.CREATE_ROOM
+import com.joyce.chessgame.GlobalConfig.Companion.HOST
+import com.joyce.chessgame.GlobalConfig.Companion.PLAYER2
 import com.joyce.chessgame.GlobalConfig.Companion.ROOM_ID
 import com.joyce.chessgame.GlobalConfig.Companion.SEARCH_ROOM
 import com.joyce.chessgame.R
@@ -37,14 +40,14 @@ class MultipleLobbyActivity : BaseActivity() {
     private fun init(){
         binding.edRoomName.filters = editTextMaxLength(15)
         binding.edSearchRoomName.filters = editTextMaxLength(15)
-    }
-
-    override fun onResume() {
-        super.onResume()
         viewModel.checkRoomsList()
     }
 
     private fun liveDataCollection() {
+        //成功隨機加入房間
+        viewModel.isSuccessAddRoomLiveData.observe(this){
+            convertToMultipleMode(it, PLAYER2)
+        }
 
         viewModel.showCreateRoomViewLiveData.observe(this){
             binding.cnsRoomName.visibility = View.VISIBLE
@@ -85,10 +88,8 @@ class MultipleLobbyActivity : BaseActivity() {
             binding.rvRooms.adapter = roomsAdapter
         }
 
-        viewModel.isCreateRoomsSuccessLiveData.observe(this){ roomId ->
-            val intent = Intent(this, MultipleModeActivity::class.java)
-            intent.putExtra(ROOM_ID, roomId)
-            startActivity(intent)
+        viewModel.isCreateRoomsSuccessLiveData.observe(this){
+            convertToMultipleMode(it, HOST)
         }
     }
 
@@ -118,6 +119,13 @@ class MultipleLobbyActivity : BaseActivity() {
         binding.tvSearchRoomNameConfirm.setOnClickListener {
             viewModel.checkRoomName(binding.edSearchRoomName.text.toString().trim(), SEARCH_ROOM)
         }
+    }
+
+    private fun convertToMultipleMode(roomId: String, character: String){
+        val intent = Intent(this, MultipleModeActivity::class.java)
+        intent.putExtra(ROOM_ID, roomId)
+        intent.putExtra(CHARACTER, character)
+        startActivity(intent)
     }
 
     private fun hideCreateRoom() {

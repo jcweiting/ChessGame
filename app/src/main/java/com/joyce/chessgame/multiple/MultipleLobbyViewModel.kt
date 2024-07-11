@@ -24,6 +24,7 @@ class MultipleLobbyViewModel: BaseViewModel() {
     var isShowProgressBarLiveData = MutableLiveData<Boolean>()
     var roomsArrayLiveData = MutableLiveData<ArrayList<GameRoomData>>()
     var isCreateRoomsSuccessLiveData = MutableLiveData<String>()
+    var isSuccessAddRoomLiveData = MutableLiveData<String>()
     private val roomsArray = ArrayList<GameRoomData>()
     private val db = Firebase.firestore
     private var isCreatedRoomsName = ""
@@ -32,6 +33,7 @@ class MultipleLobbyViewModel: BaseViewModel() {
         if (isAddRoom){
             hideCreateRoomViewLiveData.value = true
             hideSearchRoomContentLiveData.value = true
+            pickRandomRoom()
 
         } else {
 
@@ -52,6 +54,25 @@ class MultipleLobbyViewModel: BaseViewModel() {
 
         } else {
             hideSearchRoomContentLiveData.value = true
+        }
+    }
+
+    private fun pickRandomRoom() {
+        val availableRoomsArr = ArrayList<GameRoomData>()
+        for (i in 0 until roomsArray.size){
+            if (roomsArray[i].user2.isNullOrBlank()){
+                availableRoomsArr.add(roomsArray[i])
+            }
+        }
+
+        val randomInt = (0 until availableRoomsArr.size).random()
+        val randomRoomId = availableRoomsArr[randomInt].roomId
+        GameLog.i("randomRoom = $randomInt, randomRoom = ${Gson().toJson(availableRoomsArr[randomInt])}")
+
+        val actions = Actions(3, randomRoomId, ShareTool.getUserData().email)
+        sentActionNotification(actions){
+            GameLog.i("成功隨機加入房間")
+            isSuccessAddRoomLiveData.value = randomRoomId
         }
     }
 
@@ -141,17 +162,14 @@ class MultipleLobbyViewModel: BaseViewModel() {
 
     private fun checkRoomId(roomName: String) {
         var roomId = ""
-        GameLog.i("checkRoomId() --> roomName = $roomName")
-        GameLog.i("checkRoomId() --> roomsArray = ${Gson().toJson(roomsArray)}")
-        for (roomData in roomsArray){
-            if (roomData.roomName == roomName){
-                roomData.roomId?.let { roomId = it }
-                break
+        val currentUserEmail = ShareTool.getUserData().email
+        currentUserEmail?.let {
+            for (roomData in roomsArray){
+                if (roomData.host == Util.hideEmail(currentUserEmail) && roomData.roomName == roomName){
+                    roomData.roomId?.let { roomId = it }
+                    break
+                }
             }
-//            if (roomData.host == ShareTool.getUserData().email && roomData.roomName == roomName){
-//                roomData.roomId?.let { roomId = it }
-//                break
-//            }
         }
 
         isCreatedRoomsName = ""

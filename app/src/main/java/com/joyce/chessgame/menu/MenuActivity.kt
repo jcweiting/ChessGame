@@ -5,13 +5,11 @@ import android.os.Bundle
 import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.joyce.chessgame.GlobalConfig.Companion.MODE_TYPE
-import com.joyce.chessgame.GlobalConfig.Companion.OFFLINE
 import com.joyce.chessgame.R
 import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityMenuBinding
-import com.joyce.chessgame.offline.OfflineModeActivity
 import com.joyce.chessgame.multiple.MultipleLobbyActivity
+import com.joyce.chessgame.offline.OfflineModeActivity
 
 class MenuActivity : BaseActivity() {
 
@@ -32,7 +30,7 @@ class MenuActivity : BaseActivity() {
     private fun buttonCollection() {
         //離線模式
         binding.cnsOfflinePlay.setOnClickListener {
-            convertToGameBoard(OFFLINE)
+            startActivity(Intent(this, OfflineModeActivity::class.java))
         }
 
         //連線模式
@@ -50,12 +48,6 @@ class MenuActivity : BaseActivity() {
             showProgressBar(true)
             updateUserData(active = false)
         }
-    }
-
-    private fun convertToGameBoard(modeType: String) {
-        val intent = Intent(this, OfflineModeActivity::class.java)
-        intent.putExtra(MODE_TYPE, modeType)
-        startActivity(intent)
     }
 
     private fun showProgressBar(isShowed:Boolean){
