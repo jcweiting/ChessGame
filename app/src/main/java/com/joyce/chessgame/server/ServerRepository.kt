@@ -184,7 +184,7 @@ class ServerRepository {
         }
         db.collection("Rooms")
             .document(documentId)
-            .update("user2",Util.hideEmail(action.player2))
+            .update("player2",Util.hideEmail(action.player2))
 
         db.collection("Room_Action")
             .document(action.roomId)
@@ -331,7 +331,7 @@ class ServerRepository {
                     document.getString("roomId")?.let { roomId2 ->
                         roomId = roomId2
                     }
-                    document.getString("user2")?.let { user2Email ->
+                    document.getString("player2")?.let { user2Email ->
                         user2 = user2Email
                     }
                     document.getLong("status")?.let { roomStatus ->
