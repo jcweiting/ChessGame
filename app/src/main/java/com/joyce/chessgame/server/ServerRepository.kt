@@ -184,7 +184,7 @@ class ServerRepository {
         }
         db.collection("Rooms")
             .document(documentId)
-            .update("user2",Util.hideEmail(action.player2))
+            .update("player2",Util.hideEmail(action.player2))
 
         db.collection("Room_Action")
             .document(action.roomId)
