@@ -60,19 +60,25 @@ class MultipleLobbyViewModel: BaseViewModel() {
     private fun pickRandomRoom() {
         val availableRoomsArr = ArrayList<GameRoomData>()
         for (i in 0 until roomsArray.size){
-            if (roomsArray[i].user2.isNullOrBlank()){
+            if (roomsArray[i].player2.isNullOrBlank()){
                 availableRoomsArr.add(roomsArray[i])
             }
         }
 
         val randomInt = (0 until availableRoomsArr.size).random()
         val randomRoomId = availableRoomsArr[randomInt].roomId
-        GameLog.i("randomRoom = $randomInt, randomRoom = ${Gson().toJson(availableRoomsArr[randomInt])}")
 
-        val actions = Actions(3, randomRoomId, ShareTool.getUserData().email)
+        randomRoomId?.let {
+            addAvailableRoom(it)
+        }
+    }
+
+    /**加入房間*/
+    fun addAvailableRoom(roomId: String){
+        val actions = Actions(3, roomId, ShareTool.getUserData().email)
         sentActionNotification(actions){
             GameLog.i("成功隨機加入房間")
-            isSuccessAddRoomLiveData.value = randomRoomId
+            isSuccessAddRoomLiveData.value = roomId
         }
     }
 
@@ -149,7 +155,7 @@ class MultipleLobbyViewModel: BaseViewModel() {
             roomName = data["roomName"] as String?,
             status = ((data["status"] as? Long) ?:0).toInt(),
             timeStamp = ((data["timeStamp"] as? Long)?:0).toInt(),
-            user2 = data["user2"] as String?
+            player2 = data["player2"] as String?
         )
     }
 

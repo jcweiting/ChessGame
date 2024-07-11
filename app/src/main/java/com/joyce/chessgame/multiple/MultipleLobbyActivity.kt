@@ -44,7 +44,7 @@ class MultipleLobbyActivity : BaseActivity() {
     }
 
     private fun liveDataCollection() {
-        //成功隨機加入房間
+        //成功加入房間
         viewModel.isSuccessAddRoomLiveData.observe(this){
             convertToMultipleMode(it, PLAYER2)
         }
@@ -86,6 +86,13 @@ class MultipleLobbyActivity : BaseActivity() {
         viewModel.roomsArrayLiveData.observe(this){
             roomsAdapter.setRoomsArr(it)
             binding.rvRooms.adapter = roomsAdapter
+
+            //加入房間
+            roomsAdapter.setListener(object : RoomsListAdapter.OnRoomsListListener{
+                override fun onClickToAddRooms(roomId: String) {
+                    viewModel.addAvailableRoom(roomId)
+                }
+            })
         }
 
         viewModel.isCreateRoomsSuccessLiveData.observe(this){

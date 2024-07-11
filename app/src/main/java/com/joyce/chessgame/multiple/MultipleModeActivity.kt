@@ -54,12 +54,8 @@ class MultipleModeActivity : BaseActivity() {
             binding.multipleGameBoard.placeRandomChess()
         }
 
-        viewModel.hostTurnLiveData.observe(this){
-            hostTurn()
-        }
-
-        viewModel.player2TurnLiveData.observe(this){
-            turnPlayer2()
+        viewModel.isMyTurnLiveData.observe(this){
+            updateMyTextStyle(it)
         }
 
         //顯示先手or後手
@@ -68,9 +64,16 @@ class MultipleModeActivity : BaseActivity() {
             showFirstMove()
         }
 
-        viewModel.whoFirstTextLiveData.observe(this){
+        viewModel.setTextLiveData.observe(this){
             binding.tvMultipleMe.text = it.first
             binding.tvMultipleOther.text = it.second
+        }
+
+        //Btn Style
+        viewModel.updateBackBtnStyleLiveData.observe(this){
+            isShowMask(true, R.color.mask_multiple)
+            binding.tvBack.setBackgroundResource(it.first)
+            binding.tvBack.text = it.second
         }
 
         //遊戲開始倒數
@@ -86,15 +89,18 @@ class MultipleModeActivity : BaseActivity() {
             binding.progressBarMultiple.visibility = View.VISIBLE
         }
 
-        //等待對手
-        viewModel.waitingOpponentLiveData.observe(this){
-            isShowWaitingDialog(true)
+        //等待中dialog
+        viewModel.isShowWaitingDialog.observe(this){
+            isShowWaitingDialog(it)
         }
 
-        //開始遊戲
-        viewModel.startGameLiveData.observe(this){
-            isShowWaitingDialog(false)
+        //顯示開始對弈按鈕
+        viewModel.showStartGameBtnLiveDta.observe(this){
             isShowGameStart(true)
+        }
+
+        //房間資訊
+        viewModel.setRoomInfoLiveData.observe(this){
             binding.tvMultipleRoomName.text = getString(R.string.room_name) + it.first
             binding.tvOpponent.text = getString(R.string.oppsite_player) + it.second
         }
@@ -106,13 +112,13 @@ class MultipleModeActivity : BaseActivity() {
             }
         }
 
-        //host倒數計時
-        viewModel.hostTimeRemainLiveData.observe(this){
+        //我方倒數計時
+        viewModel.myRemainTimeLiveData.observe(this){
             binding.tvCountDownMe.text = it + getString(R.string.second)
         }
 
-        //對手倒數計時
-        viewModel.player2TimeRemainLiveData.observe(this){
+        //對方倒數計時
+        viewModel.opponentTimeRemainLiveData.observe(this){
             binding.tvCountDownOpposite.text = it + getString(R.string.second)
         }
 
@@ -130,10 +136,8 @@ class MultipleModeActivity : BaseActivity() {
     }
 
     private fun buttonCollection() {
-        binding.maskMultipleWaiting.setOnClickListener {
-            GameLog.i("點到mask了")
-        }
-        binding.cnsWaiting.setOnClickListener {  }
+        binding.maskMultipleWaiting.setOnClickListener {}
+        binding.cnsWaiting.setOnClickListener {}
 
         binding.tvBack.setOnClickListener {
             viewModel.checkButtonType(binding.tvBack.text.toString())
@@ -171,24 +175,28 @@ class MultipleModeActivity : BaseActivity() {
         })
     }
 
-    private fun hostTurn(){
+    private fun updateMyTextStyle(isMyTurn: Boolean){
         isShowMask(false, android.R.color.transparent)
-        binding.tvMultipleMe.setBackgroundResource(R.drawable.bg_player_active)
-        binding.imMultipleFlagMe.visibility = View.VISIBLE
-        binding.tvCountDownMe.visibility = View.VISIBLE
-        binding.tvMultipleOther.setBackgroundResource(R.drawable.bg_player_inactive)
-        binding.imMultipleFlagOther.visibility = View.GONE
-        binding.tvCountDownOpposite.visibility = View.GONE
-    }
+        when(isMyTurn){
+            true -> {
+                binding.tvMultipleMe.setBackgroundResource(R.drawable.bg_player_active)
+                binding.imMultipleFlagMe.visibility = View.VISIBLE
+                binding.tvCountDownMe.visibility = View.VISIBLE
 
-    private fun turnPlayer2(){
-        isShowMask(false, android.R.color.transparent)
-        binding.tvMultipleMe.setBackgroundResource(R.drawable.bg_player_inactive)
-        binding.imMultipleFlagMe.visibility = View.GONE
-        binding.tvCountDownMe.visibility = View.GONE
-        binding.tvMultipleOther.setBackgroundResource(R.drawable.bg_player_active)
-        binding.imMultipleFlagOther.visibility = View.VISIBLE
-        binding.tvCountDownOpposite.visibility = View.VISIBLE
+                binding.tvMultipleOther.setBackgroundResource(R.drawable.bg_player_inactive)
+                binding.imMultipleFlagOther.visibility = View.GONE
+                binding.tvCountDownOpposite.visibility = View.GONE
+            }
+            false -> {
+                binding.tvMultipleMe.setBackgroundResource(R.drawable.bg_player_inactive)
+                binding.imMultipleFlagMe.visibility = View.GONE
+                binding.tvCountDownMe.visibility = View.GONE
+
+                binding.tvMultipleOther.setBackgroundResource(R.drawable.bg_player_active)
+                binding.imMultipleFlagOther.visibility = View.VISIBLE
+                binding.tvCountDownOpposite.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun initPlayerStyle(){
@@ -227,17 +235,11 @@ class MultipleModeActivity : BaseActivity() {
                 isShowMask(true, R.color.mask_multiple)
                 binding.cnsGameStart.visibility = View.VISIBLE
             }
-            false -> {
-                binding.cnsGameStart.visibility = View.GONE
-                binding.tvBack.setBackgroundResource(R.drawable.bg_grey_radius10)
-            }
+            false -> binding.cnsGameStart.visibility = View.GONE
         }
     }
 
     private fun showFirstMove() {
-        binding.tvBack.text = getString(R.string.give_up)
-        binding.tvBack.setBackgroundResource(R.drawable.bg_brown1_radius10)
-
         binding.progressBarMultiple.visibility = View.GONE
         binding.tvFirstMove.visibility = View.VISIBLE
         //加載進入動畫

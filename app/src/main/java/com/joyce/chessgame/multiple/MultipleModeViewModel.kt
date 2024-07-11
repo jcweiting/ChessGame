@@ -3,7 +3,6 @@ package com.joyce.chessgame.multiple
 import android.os.CountDownTimer
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.core.InFilter
 import com.google.firebase.firestore.firestore
 import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
@@ -16,20 +15,21 @@ import com.joyce.chessgame.base.BaseViewModel
 class MultipleModeViewModel: BaseViewModel() {
 
     var backToPreviousPageLiveData = MutableLiveData<Boolean>()
-    var waitingOpponentLiveData = MutableLiveData<Boolean>()
-    var startGameLiveData = MutableLiveData<Pair<String?, String?>>()
+    var setRoomInfoLiveData = MutableLiveData<Pair<String?, String?>>()
+    var showStartGameBtnLiveDta = MutableLiveData<Boolean>()
     var gameStartCountDownLiveData = MutableLiveData<String>()
     var isFinishedCountDownLiveData = MutableLiveData<Boolean>()
     var giveUpGameAlertLiveData = MutableLiveData<Boolean>()
     var showAlertDialogLiveData = MutableLiveData<String>()
-    var hostTimeRemainLiveData = MutableLiveData<String>()
-    var player2TimeRemainLiveData = MutableLiveData<String>()
-    var hostTurnLiveData = MutableLiveData<Boolean>()
-    var player2TurnLiveData = MutableLiveData<Boolean>()
+    var myRemainTimeLiveData = MutableLiveData<String>()
+    var opponentTimeRemainLiveData = MutableLiveData<String>()
+    var isMyTurnLiveData = MutableLiveData<Boolean>()
+    var setTextLiveData = MutableLiveData<Pair<String, String>>()
     var whoFirstLiveData = MutableLiveData<String>()
-    var whoFirstTextLiveData = MutableLiveData<Pair<String, String>>()
     var autoPlaceChessLiveData = MutableLiveData<Boolean>()
     var showWinnerLiveData = MutableLiveData<String>()
+    var isShowWaitingDialog = MutableLiveData<Boolean>()
+    var updateBackBtnStyleLiveData = MutableLiveData<Pair<Int, String>>()
     private val db = Firebase.firestore
     private var isEnableTvBack = true
     private var roomAction = RoomAction()
@@ -38,7 +38,7 @@ class MultipleModeViewModel: BaseViewModel() {
     private var character = ""
 
     fun initView(roomId: String?, character: String?) {
-        waitingOpponentLiveData.value = true
+        isShowWaitingDialog.value = true
         checkRoomAction(roomId)
         character?.let {
             this.character = it
@@ -54,7 +54,6 @@ class MultipleModeViewModel: BaseViewModel() {
 
     /**倒數10秒*/
     private fun gameStartCountDown() {
-        GameLog.i("gameStartCountDown() roomAction.second = ${roomAction.second}")
         if (roomAction.second >= 1){
             gameStartCountDownLiveData.value = roomAction.second.toString()
         } else {
@@ -104,22 +103,29 @@ class MultipleModeViewModel: BaseViewModel() {
                         roomAction = mapToRoomAction(data)
                         GameLog.i("checkRoomAction() --> roomAction = ${Gson().toJson(roomAction)}")
 
-                        //顯示「開始對弈」按鈕
-                        if (character == HOST && roomAction.status == 0 && !roomAction.player2.isNullOrEmpty()){
+                        //遊戲準備開始
+                        if (roomAction.status == 0 && !roomAction.player2.isNullOrEmpty()){
                             isEnableTvBack = false
-                            startGameLiveData.value = Pair(roomAction.roomName, roomAction.player2)
+
+                            val opponent = if (character == HOST) roomAction.player2 else roomAction.host
+                            setRoomInfoLiveData.value = Pair(roomAction.roomName, opponent)
+
+                            //顯示「開始對弈」
+                            if (character == HOST) {
+                                isShowWaitingDialog.value = false
+                                showStartGameBtnLiveDta.value = true
+                            }
 
                             //倒數10秒
                         } else if (roomAction.status == 2){
+                            if (character == PLAYER2) isShowWaitingDialog.value = false
+                            updateBackBtnStyleLiveData.value = Pair(R.drawable.bg_grey_radius10, Util.getString(R.string.back))
                             gameStartCountDown()
-                            if (character == PLAYER2) {
-                                waitingOpponentLiveData.value = false
-                            }
 
                             //開始遊戲
                         } else if (roomAction.status == 4){
-                            checkPlayerTurn()
-                            if (isInitial) checkWhoTurn() else startCountDownTimer()
+                            checkWhoTurn()
+                            if (isInitial) checkFirstMove() else startCountDownTimer()
                         }
 
                     } else {
@@ -151,38 +157,33 @@ class MultipleModeViewModel: BaseViewModel() {
         )
     }
 
-    private fun checkPlayerTurn() {
-        if (roomAction.whoTurn == 0){
-            hostTurnLiveData.value = true
-        } else {
-            player2TurnLiveData.value = true
+    private fun checkFirstMove() {
+        if (roomAction.whoFirst == 0 && character == HOST){
+            whoFirstLiveData.value = Util.getString(R.string.first_move)
+            setTextLiveData.value = Pair(Util.getString(R.string.my_side_black),Util.getString(R.string.opposite_side_white))
+
+        } else if (roomAction.whoFirst == 0 && character == PLAYER2){
+            whoFirstLiveData.value = Util.getString(R.string.second_move)
+            setTextLiveData.value = Pair(Util.getString(R.string.my_side_white),Util.getString(R.string.opposite_side_black))
+
+        } else if (roomAction.whoFirst == 1 && character == HOST){
+            whoFirstLiveData.value = Util.getString(R.string.second_move)
+            setTextLiveData.value = Pair(Util.getString(R.string.my_side_white),Util.getString(R.string.opposite_side_black))
+
+        } else if (roomAction.whoFirst == 1 && character == PLAYER2){
+            whoFirstLiveData.value = Util.getString(R.string.first_move)
+            setTextLiveData.value = Pair(Util.getString(R.string.my_side_black),Util.getString(R.string.opposite_side_white))
         }
+
+        updateBackBtnStyleLiveData.value = Pair(R.drawable.bg_grey_radius10, Util.getString(R.string.give_up))
+        isInitial = false
     }
 
     private fun checkWhoTurn() {
-        if (roomAction.whoFirst == 0){
-            if (character == HOST){
-                isFirstMove(true)
-            } else {
-                isFirstMove(false)
-            }
-
-        } else {
-            if (character == PLAYER2){
-                isFirstMove(true)
-            } else {
-                isFirstMove(false)
-            }
-        }
-    }
-
-    private fun isFirstMove(isFirstMove: Boolean){
-        if (isFirstMove){
-            whoFirstLiveData.value = Util.getString(R.string.first_move)
-            whoFirstTextLiveData.value = Pair(Util.getString(R.string.my_side_black), Util.getString(R.string.opposite_side_white))
-        } else {
-            whoFirstLiveData.value = Util.getString(R.string.second_move)
-            whoFirstTextLiveData.value = Pair(Util.getString(R.string.my_side_white), Util.getString(R.string.opposite_side_black))
+        if (roomAction.whoTurn == 0 && character == HOST || roomAction.whoTurn == 1 && character == PLAYER2){
+            isMyTurnLiveData.value = true
+        } else if (roomAction.whoTurn == 0 && character == PLAYER2 || roomAction.whoTurn == 1 && character == HOST){
+            isMyTurnLiveData.value = false
         }
     }
 
@@ -192,10 +193,10 @@ class MultipleModeViewModel: BaseViewModel() {
             override fun onTick(millisUntilFinished: Long) {
                 val secondRemaining = millisUntilFinished/1000
 
-                if (roomAction.whoTurn == 0) {
-                    hostTimeRemainLiveData.value = secondRemaining.toString()
-                } else {
-                    player2TimeRemainLiveData.value = secondRemaining.toString()
+                if (roomAction.whoTurn == 0 && character == HOST || roomAction.whoTurn == 1 && character == PLAYER2){
+                    myRemainTimeLiveData.value = secondRemaining.toString()
+                } else if (roomAction.whoTurn == 0 && character == PLAYER2 || roomAction.whoTurn == 1 && character == HOST){
+                    opponentTimeRemainLiveData.value = secondRemaining.toString()
                 }
             }
 
@@ -205,7 +206,6 @@ class MultipleModeViewModel: BaseViewModel() {
             }
         }
         countDownTimer?.start()
-        isInitial = false
     }
 
     fun gameEnd(blackChess: Boolean, mySide: String, player2Side: String) {
