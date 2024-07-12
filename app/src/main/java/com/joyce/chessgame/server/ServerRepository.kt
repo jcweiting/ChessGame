@@ -274,6 +274,10 @@ class ServerRepository {
     }
 
     private fun createRoom(action: ActionData) {
+        if (roomsList.any { it.roomName == action.roomName }) {
+            return
+        }
+
         val roomData = hashMapOf(
             "roomId" to UUID.randomUUID().toString(),
             "host" to Util.hideEmail(action.host),
@@ -345,6 +349,7 @@ class ServerRepository {
                     var status = 0L
                     var timeStamp = 0L
                     var user2 = ""
+                    var roomName = ""
                     document.getString("host")?.let { hostEmail ->
                         host = hostEmail
                     }
@@ -360,7 +365,10 @@ class ServerRepository {
                     document.getLong("timeStamp")?.let { time->
                         timeStamp = time
                     }
-                    val roomData = GameRoomData(roomId,host,user2,timeStamp,status,document.id)
+                    document.getString("roomName")?.let{name ->
+                        roomName = name
+                    }
+                    val roomData = GameRoomData(roomId,host,user2,timeStamp,status,document.id,roomName)
                     roomsList.add(roomData)
                 }
                 var waitingCount = 0
@@ -383,7 +391,7 @@ class ServerRepository {
     private fun checkEmptyRoom() {
         val removeRoomList = ArrayList<GameRoomData>()
         for (room in roomsList){
-            if (room.host.isEmpty() && room.user2.isEmpty()){
+            if (room.host.isEmpty() && room.player2.isEmpty()){
                 removeRoomList.add(room)
                 break
             }
