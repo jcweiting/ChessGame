@@ -10,5 +10,6 @@ data class ActionData(
     val player2 :String,
     val x :Long,
     val y :Long,
-    val whoPress:Long
+    val whoPress:Long,
+    val whoLeave:Long
 )

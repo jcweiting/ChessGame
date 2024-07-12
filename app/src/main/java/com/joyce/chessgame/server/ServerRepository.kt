@@ -28,6 +28,7 @@ class ServerRepository {
         const val PRESS_CHESS = 5L
         const val HOST = 0L
         const val USER2 = 1L
+        const val LEAVE_ROOM = 6L
     }
     private val roomsList = ArrayList<GameRoomData>()
     private lateinit var onCatchDataFromDataBaseListener: OnCatchDataFromDataBaseListener
@@ -101,6 +102,10 @@ class ServerRepository {
                     var x = 0L
                     var y = 0L
                     var whoPress = 0L
+                    var whoLeave = 0L
+                    document.getLong("whoLeave")?.let { who->
+                        whoLeave = who
+                    }
                     document.getLong("whoPress")?.let { pressStatus->
                         whoPress = pressStatus
                     }
@@ -128,7 +133,7 @@ class ServerRepository {
                     document.getLong("timeStamp")?.let { serverTimeStamp ->
                         time = serverTimeStamp
                     }
-                    val actionData = ActionData(actionType, host, time,roomId,document.id,roomName,player2,x,y,whoPress)
+                    val actionData = ActionData(actionType, host, time,roomId,document.id,roomName,player2,x,y,whoPress,whoLeave)
                     actionsList.add(actionData)
                 }
                 for (action in actionsList){
@@ -144,8 +149,23 @@ class ServerRepository {
                     if (action.actionType == PRESS_CHESS){
                         handlePressChess(action)
                     }
+                    if (action.actionType == LEAVE_ROOM){
+                        handleLeaveRoom(action)
+                    }
                 }
             }
+    }
+
+    private fun handleLeaveRoom(action: ActionData) {
+        var documentId = ""
+        for (room in roomsList){
+            if (room.roomId == action.roomId){
+                documentId = room.documentId
+                break
+            }
+        }
+        db.collection("Rooms").document(documentId)
+            .update((if (action.whoLeave == 0L) "host" else "user2"),"")
     }
 
     private fun handlePressChess(action: ActionData) {
@@ -354,7 +374,28 @@ class ServerRepository {
                     }
                 }
                 onCatchDataFromDataBaseListener.onShowLog("目前房間數 : ${roomsList.size} , 等待中 : $waitingCount , 對弈中 : $matchingCount")
+
+                checkEmptyRoom()
+
             }
+    }
+
+    private fun checkEmptyRoom() {
+        val removeRoomList = ArrayList<GameRoomData>()
+        for (room in roomsList){
+            if (room.host.isEmpty() && room.user2.isEmpty()){
+                removeRoomList.add(room)
+                break
+            }
+        }
+        for (removeRoom in removeRoomList){
+            removeEmptyRoom(removeRoom)
+        }
+    }
+
+    private fun removeEmptyRoom(removeRoom: GameRoomData) {
+        db.collection("Rooms").document(removeRoom.documentId)
+            .delete()
     }
 
 
