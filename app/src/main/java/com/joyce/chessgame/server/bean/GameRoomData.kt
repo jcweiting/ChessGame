@@ -6,5 +6,6 @@ data class GameRoomData (
     val player2:String ,
     val timeStamp:Long ,
     val status:Long,
-    val documentId:String
+    val documentId:String,
+    val roomName:String
 )
