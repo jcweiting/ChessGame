@@ -22,6 +22,7 @@ class MultipleLobbyViewModel: BaseViewModel() {
     var showAlertLiveData = MutableLiveData<String>()
     var isShowProgressBarLiveData = MutableLiveData<Boolean>()
     var roomsArrayLiveData = MutableLiveData<ArrayList<GameRoomData>>()
+    var emptyRoomLiveData = MutableLiveData<Boolean>()
     var isCreateRoomsSuccessLiveData = MutableLiveData<String>()
     var isSuccessAddRoomLiveData = MutableLiveData<String>()
     private val roomsArray = ArrayList<GameRoomData>()
@@ -58,6 +59,11 @@ class MultipleLobbyViewModel: BaseViewModel() {
             if (roomsArray[i].player2.isNullOrBlank()){
                 availableRoomsArr.add(roomsArray[i])
             }
+        }
+
+        if (availableRoomsArr.isEmpty()){
+            showAlertLiveData.value = Util.getString(R.string.cannot_find_empty_room)
+            return
         }
 
         val randomInt = (0 until availableRoomsArr.size).random()
@@ -108,7 +114,7 @@ class MultipleLobbyViewModel: BaseViewModel() {
             } else {
                 if (i == availableRoomsArr.size-1){
                     isShowProgressBarLiveData.value = false
-                    showAlertLiveData.value = Util.getString(R.string.cannt_find_the_room)
+                    showAlertLiveData.value = Util.getString(R.string.cannot_find_the_room)
                 }
             }
         }
@@ -143,8 +149,6 @@ class MultipleLobbyViewModel: BaseViewModel() {
 
                         //更新roomsArr
                         val index = roomsArray.indexOfFirst { it.roomId == gameRoomData.roomId }
-                        GameLog.i("index = $index")
-
                         if (index != -1){   //有匹配的元素
                             roomsArray[index] = gameRoomData
                         } else {    //無匹配的元素
@@ -163,7 +167,11 @@ class MultipleLobbyViewModel: BaseViewModel() {
 
             //TODO: 如果回的DATA是空的? --- 無房間
             GameLog.i("roomsArray = ${Gson().toJson(roomsArray)}")
-            roomsArrayLiveData.value = roomsArray
+            if (roomsArray.isEmpty()){
+                emptyRoomLiveData.value = true
+            } else {
+                roomsArrayLiveData.value = roomsArray
+            }
         }
     }
 

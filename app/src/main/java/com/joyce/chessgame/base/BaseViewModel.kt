@@ -22,11 +22,10 @@ open class BaseViewModel: ViewModel() {
                 }
 
             }.addOnSuccessListener {
-                GameLog.i("*****房間新增-成功***** actions = ${Gson().toJson(actions)}")
+                GameLog.i("*****房間新增-成功***** XY = ${actions.x}-${actions.y} | actions = ${Gson().toJson(actions)}")
                 onComplete()
             }.addOnFailureListener {
                 GameLog.i("*****房間新增-失敗 = $it")
-                //TODO: 若有相同房間, server錯誤訊息會回在這裡嗎?
                 onComplete()
             }
         }

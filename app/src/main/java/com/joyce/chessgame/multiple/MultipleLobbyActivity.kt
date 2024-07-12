@@ -81,6 +81,7 @@ class MultipleLobbyActivity : BaseActivity() {
 
         //房間列表
         viewModel.roomsArrayLiveData.observe(this){
+            isShowRoomList(true)
             roomsAdapter.setRoomsArr(it)
             binding.rvRooms.adapter = roomsAdapter
 
@@ -90,6 +91,10 @@ class MultipleLobbyActivity : BaseActivity() {
                     viewModel.addAvailableRoom(roomId)
                 }
             })
+        }
+
+        viewModel.emptyRoomLiveData.observe(this){
+            isShowRoomList(false)
         }
 
         viewModel.isCreateRoomsSuccessLiveData.observe(this){
@@ -122,6 +127,19 @@ class MultipleLobbyActivity : BaseActivity() {
         //確定搜尋
         binding.tvSearchRoomNameConfirm.setOnClickListener {
             viewModel.checkRoomName(binding.edSearchRoomName.text.toString().trim(), SEARCH_ROOM)
+        }
+    }
+
+    private fun isShowRoomList(isShow: Boolean){
+        when(isShow){
+            true -> {
+                binding.rvRooms.visibility = View.VISIBLE
+                binding.tvNoRooms.visibility = View.GONE
+            }
+            false -> {
+                binding.rvRooms.visibility = View.GONE
+                binding.tvNoRooms.visibility = View.VISIBLE
+            }
         }
     }
 

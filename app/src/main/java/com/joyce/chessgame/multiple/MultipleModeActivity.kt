@@ -8,7 +8,6 @@ import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.GlobalConfig.Companion.CHARACTER
 import com.joyce.chessgame.GlobalConfig.Companion.MULTIPLE
 import com.joyce.chessgame.GlobalConfig.Companion.ROOM_ID
@@ -50,11 +49,17 @@ class MultipleModeActivity : BaseActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun liveDataCollection() {
+        //更新棋盤
+        viewModel.updateChessBoard.observe(this){
+            binding.multipleGameBoard.updateChessCollection(it.first, it.second)
+        }
+
         viewModel.autoPlaceChessLiveData.observe(this){
             binding.multipleGameBoard.placeRandomChess()
         }
 
         viewModel.isMyTurnLiveData.observe(this){
+            binding.multipleGameBoard.setIsMyTurn(it)
             updateMyTextStyle(it)
         }
 
@@ -107,7 +112,7 @@ class MultipleModeActivity : BaseActivity() {
 
         //放棄遊戲
         viewModel.giveUpGameAlertLiveData.observe(this){
-            showAlertDialogWithNegative(this, getString(R.string.error), getString(R.string.sure_to_quit), true, getString(R.string.confirm), getString(R.string.canel)){
+            showAlertDialogWithNegative(this, getString(R.string.error), getString(R.string.sure_to_quit), true, getString(R.string.confirm), getString(R.string.cancel)){
                 viewModel.isQuitGame(it)
             }
         }
@@ -169,16 +174,16 @@ class MultipleModeActivity : BaseActivity() {
 
         binding.multipleGameBoard.setMultipleModeListener(object : GameBoard.OnMultipleModeListener{
             override fun onChessLocation(isBlackChess: Boolean, x: Long, y: Long) {
-                GameLog.i("座標轉換 --> X = $x, Y = $y")
                 viewModel.sentChessLocation(isBlackChess, x, y)
             }
         })
     }
 
     private fun updateMyTextStyle(isMyTurn: Boolean){
-        isShowMask(false, android.R.color.transparent)
         when(isMyTurn){
             true -> {
+                isShowMask(false, android.R.color.transparent)
+
                 binding.tvMultipleMe.setBackgroundResource(R.drawable.bg_player_active)
                 binding.imMultipleFlagMe.visibility = View.VISIBLE
                 binding.tvCountDownMe.visibility = View.VISIBLE
@@ -188,6 +193,8 @@ class MultipleModeActivity : BaseActivity() {
                 binding.tvCountDownOpposite.visibility = View.GONE
             }
             false -> {
+                isShowMask(true, android.R.color.transparent)
+
                 binding.tvMultipleMe.setBackgroundResource(R.drawable.bg_player_inactive)
                 binding.imMultipleFlagMe.visibility = View.GONE
                 binding.tvCountDownMe.visibility = View.GONE

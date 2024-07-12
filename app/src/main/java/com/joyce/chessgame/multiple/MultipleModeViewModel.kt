@@ -3,11 +3,14 @@ package com.joyce.chessgame.multiple
 import android.os.CountDownTimer
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.firestore
 import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
+import com.joyce.chessgame.GlobalConfig.Companion.BLACK
 import com.joyce.chessgame.GlobalConfig.Companion.HOST
 import com.joyce.chessgame.GlobalConfig.Companion.PLAYER2
+import com.joyce.chessgame.GlobalConfig.Companion.WHITE
 import com.joyce.chessgame.R
 import com.joyce.chessgame.Util
 import com.joyce.chessgame.base.BaseViewModel
@@ -30,16 +33,20 @@ class MultipleModeViewModel: BaseViewModel() {
     var showWinnerLiveData = MutableLiveData<String>()
     var isShowWaitingDialog = MutableLiveData<Boolean>()
     var updateBackBtnStyleLiveData = MutableLiveData<Pair<Int, String>>()
+    var updateChessBoard = MutableLiveData<Pair<ChessCollection, Boolean>>()
     private val db = Firebase.firestore
     private var isEnableTvBack = true
     private var roomAction = RoomAction()
     private var countDownTimer: CountDownTimer? = null
     private var isInitial = true
     private var character = ""
+    private var myChessColor = ""
+    private var isStartCheckChessLocation = false
 
     fun initView(roomId: String?, character: String?) {
         isShowWaitingDialog.value = true
         checkRoomAction(roomId)
+        checkChessBoard(roomId)
         character?.let {
             this.character = it
         }
@@ -90,7 +97,7 @@ class MultipleModeViewModel: BaseViewModel() {
         val docRef = db.collection("Room_Action").document(roomId)
         docRef.addSnapshotListener { snapshots, error ->
             if (error != null){
-                GameLog.i("監聽失敗 = $error")
+                error.printStackTrace()
                 showAlertDialogLiveData.value = Util.getString(R.string.get_some_mistake)
                 return@addSnapshotListener
             }
@@ -106,7 +113,8 @@ class MultipleModeViewModel: BaseViewModel() {
                         //遊戲準備開始
                         if (roomAction.status == 0 && !roomAction.player2.isNullOrEmpty()){
                             val opponent = if (character == HOST) roomAction.player2 else roomAction.host
-                            setRoomInfoLiveData.value = Pair(roomAction.roomName, opponent)
+                            val roomName = if (character == HOST) roomAction.roomName + Util.getString(R.string.desc_host) else roomAction.roomName
+                            setRoomInfoLiveData.value = Pair(roomName, opponent)
 
                             //顯示「開始對弈」
                             if (character == HOST) {
@@ -127,6 +135,7 @@ class MultipleModeViewModel: BaseViewModel() {
                         } else if (roomAction.status == 4){
                             checkWhoTurn()
                             if (isInitial) checkFirstMove() else startCountDownTimer()
+                            isStartCheckChessLocation = true
                         }
 
                     } else {
@@ -158,22 +167,73 @@ class MultipleModeViewModel: BaseViewModel() {
         )
     }
 
+    private fun checkChessBoard(roomId: String?) {
+        if (roomId.isNullOrBlank()){
+            showAlertDialogLiveData.value = Util.getString(R.string.get_some_mistake)
+            return
+        }
+
+        var chessCollection: ChessCollection? = null
+        val docRef = db.collection("Room_Action").document(roomId).collection("chessBoard")
+        docRef.addSnapshotListener { snapshots, error ->
+            if (error != null){
+                error.printStackTrace()
+                showAlertDialogLiveData.value = Util.getString(R.string.get_some_mistake)
+                return@addSnapshotListener
+            }
+
+            for (docChange in snapshots!!.documentChanges){
+                when(docChange.type){
+                    DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
+                        val data = docChange.document.data
+                        if (!isStartCheckChessLocation){
+                            return@addSnapshotListener
+                        }
+
+                        chessCollection = mapToChessCollection(data)
+                        GameLog.i("監聽 chessCollection XY = ${chessCollection!!.x}-${chessCollection!!.y} | ${Gson().toJson(chessCollection)}")
+
+                    }
+
+                    DocumentChange.Type.REMOVED -> {
+                        val data = docChange.document.data
+                        GameLog.i("移除 chessCollection  = ${Gson().toJson(data)}")
+                    }
+                }
+            }
+            chessCollection?.let { updateChessBoard(it) }
+        }
+    }
+
+    private fun updateChessBoard(chessCollection: ChessCollection) {
+        if (chessCollection.whoPress == 0 && character == HOST || chessCollection.whoPress == 1 && character == PLAYER2){
+            GameLog.i("不更新")
+
+        } else if (chessCollection.whoPress == 0 && character == PLAYER2 || chessCollection.whoPress == 1 && character == HOST){
+            GameLog.i("----------------------------------------------")
+            GameLog.i("開始更新")
+            updateChessBoard.value = Pair(chessCollection, myChessColor != BLACK)
+        }
+    }
+
+    private fun mapToChessCollection(data: Map<String, Any>): ChessCollection{
+        return ChessCollection(
+            whoPress = (data["whoPress"] as? Long)?.toInt()?:0,
+            x = (data["x"] as? Long)?.toInt()?:0,
+            y = (data["y"] as? Long)?.toInt()?:0,
+        )
+    }
+
     private fun checkFirstMove() {
-        if (roomAction.whoFirst == 0 && character == HOST){
+        if (roomAction.whoFirst == 0 && character == HOST || roomAction.whoFirst == 1 && character == PLAYER2){
+            myChessColor = BLACK
             whoFirstLiveData.value = Util.getString(R.string.first_move)
             setTextLiveData.value = Pair(Util.getString(R.string.my_side_black),Util.getString(R.string.opposite_side_white))
 
-        } else if (roomAction.whoFirst == 0 && character == PLAYER2){
+        } else if (roomAction.whoFirst == 0 && character == PLAYER2 || roomAction.whoFirst == 1 && character == HOST){
+            myChessColor = WHITE
             whoFirstLiveData.value = Util.getString(R.string.second_move)
             setTextLiveData.value = Pair(Util.getString(R.string.my_side_white),Util.getString(R.string.opposite_side_black))
-
-        } else if (roomAction.whoFirst == 1 && character == HOST){
-            whoFirstLiveData.value = Util.getString(R.string.second_move)
-            setTextLiveData.value = Pair(Util.getString(R.string.my_side_white),Util.getString(R.string.opposite_side_black))
-
-        } else if (roomAction.whoFirst == 1 && character == PLAYER2){
-            whoFirstLiveData.value = Util.getString(R.string.first_move)
-            setTextLiveData.value = Pair(Util.getString(R.string.my_side_black),Util.getString(R.string.opposite_side_white))
         }
 
         updateBackBtnStyleLiveData.value = Pair(R.drawable.bg_grey_radius10, Util.getString(R.string.give_up))
@@ -190,7 +250,7 @@ class MultipleModeViewModel: BaseViewModel() {
 
     fun startCountDownTimer(){
         countDownTimer?.cancel()
-        countDownTimer = object : CountDownTimer(21000, 1000){
+        countDownTimer = object : CountDownTimer(31000, 1000){
             override fun onTick(millisUntilFinished: Long) {
                 val secondRemaining = millisUntilFinished/1000
 
@@ -203,7 +263,11 @@ class MultipleModeViewModel: BaseViewModel() {
 
             //倒數結束, 自動下棋
             override fun onFinish() {
-                autoPlaceChessLiveData.value = true
+                if (roomAction.whoTurn == 0 && character == HOST || roomAction.whoTurn == 1 && character == PLAYER2){
+                    autoPlaceChessLiveData.value = true
+                } else {
+                    GameLog.i("不是輪到我方, 不需自動下棋")
+                }
             }
         }
         countDownTimer?.start()
@@ -228,7 +292,9 @@ class MultipleModeViewModel: BaseViewModel() {
 
     fun sentChessLocation(blackChess: Boolean, x: Long, y: Long) {
         GameLog.i("blackChess = $blackChess, roomAction.whoTurn = ${roomAction.whoTurn}")
-        val actions = Actions(5, x, y, roomAction.whoTurn.toLong(), roomAction.roomId)
+
+        val whoPress = if (character == HOST) 0.toLong() else 1.toLong()
+        val actions = Actions(5, x, y, whoPress, roomAction.roomId)
         sentActionNotification(actions){
             GameLog.i("座標更新完成")
         }

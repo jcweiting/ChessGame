@@ -13,5 +13,7 @@ class GlobalConfig {
         const val PLAYER2 = "player2"
         const val HOST = "host"
         const val CHARACTER = "character"
+        const val BLACK = "black"
+        const val WHITE = "white"
     }
 }

@@ -13,6 +13,7 @@ import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.GlobalConfig.Companion.MULTIPLE
 import com.joyce.chessgame.R
+import com.joyce.chessgame.multiple.ChessCollection
 import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.random.Random
@@ -33,6 +34,11 @@ class GameBoard: View {
     private var avgSpaceDifferent = 0.0f //每一格的間距
     private var modeType = ""
     private var isAutoPlacedChess = false
+    private var isMyTurn = true
+
+    fun setIsMyTurn(isMyTurn: Boolean){
+        this.isMyTurn = isMyTurn
+    }
 
     fun setModeType(modeType: String){
         this.modeType = modeType
@@ -230,6 +236,8 @@ class GameBoard: View {
     }
 
     private fun handleTouch(x: Float, y: Float) {
+        GameLog.i("handleTouch() --> isAutoPlacedChess = $isAutoPlacedChess")
+
         val nearestPoint = findNearestPoint(x, y)
 
         if (nearestPoint == null && isAutoPlacedChess){
@@ -264,11 +272,16 @@ class GameBoard: View {
     /**放置旗棋子*/
     private fun placeStone(point: ChessPoint) {
         GameLog.i("棋子座標 = ${Gson().toJson(point)}")
+        GameLog.i("modeType = $modeType, isMyTurn = $isMyTurn, point.isBlackChess = ${point.isBlackChess}")
+
         //將棋子座標加到列表中
         mStonesArr.add(point)
+        GameLog.i("棋子座標Arr mStonesArr = ${Gson().toJson(mStonesArr)}")
 
         //將座標傳遞給SERVER
-        if (modeType == MULTIPLE){
+        if (modeType == MULTIPLE && isMyTurn){
+            GameLog.i("----------------------------------------------")
+            GameLog.i("是我方下棋, 要上傳座標")
             multipleListener?.onChessLocation(isBlackChess, getChessXLocation(point.centerX),getChessYLocation(point.centerY))
         }
 
@@ -305,6 +318,17 @@ class GameBoard: View {
         }
 
         return y
+    }
+
+    /**更新棋盤*/
+    fun updateChessCollection(chessCollection: ChessCollection, isBlackChess: Boolean) {
+        val chessLocation = ChessPoint(isBlackChess,
+            screenWidth / gameBoardCells * chessCollection.x,
+            screenHeight / gameBoardCells * chessCollection.y)
+
+        GameLog.i("更新棋盤 XY = ${chessCollection.x}-${chessCollection.y} chessCollection = ${Gson().toJson(chessCollection)}")
+        GameLog.i("更新棋盤 chessLocation = ${Gson().toJson(chessLocation)}")
+        placeStone(chessLocation)
     }
 
     private fun updateGameBoard(){
