@@ -54,4 +54,5 @@
     <string name="cannot_find_empty_room">目前尚無空房</string>
     <string name="no_rooms">尚無房間</string>
     <string name="desc_host">(房主)</string>
+    <string name="no_opponent">對手已退出遊戲</string>
 </resources>

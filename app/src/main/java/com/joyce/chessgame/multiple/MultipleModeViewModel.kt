@@ -24,6 +24,7 @@ class MultipleModeViewModel: BaseViewModel() {
     var isFinishedCountDownLiveData = MutableLiveData<Boolean>()
     var giveUpGameAlertLiveData = MutableLiveData<Boolean>()
     var showAlertDialogLiveData = MutableLiveData<String>()
+    var showLeftRoomDialogLiveData = MutableLiveData<String>()
     var myRemainTimeLiveData = MutableLiveData<String>()
     var opponentTimeRemainLiveData = MutableLiveData<String>()
     var isMyTurnLiveData = MutableLiveData<Boolean>()
@@ -53,6 +54,13 @@ class MultipleModeViewModel: BaseViewModel() {
     }
 
     fun sentGameStartToServer(roomId: String?) {
+        if (roomAction.player2.isNullOrBlank()){
+            GameLog.i("點選開始對弈, 但player2是空的")
+            showAlertDialogLiveData.value = Util.getString(R.string.try_later)
+            leftRoom()
+            return
+        }
+
         roomId?.let {
             val actions = Actions(2, it)
             sentActionNotification(actions){}
@@ -72,17 +80,10 @@ class MultipleModeViewModel: BaseViewModel() {
     /**確認按鈕目前狀態*/
     fun checkButtonType(buttonContent: String) {
         if (isEnableTvBack && buttonContent == Util.getString(R.string.back)){
-            backToPreviousPageLiveData.value = true
+            leftRoom()
 
         } else if (buttonContent == Util.getString(R.string.give_up)){
             giveUpGameAlertLiveData.value = true
-        }
-    }
-
-    fun isQuitGame(isQuitGame: Boolean) {
-        if(isQuitGame){
-            //TODO: 通知server要放棄遊戲
-            backToPreviousPageLiveData.value = true
         }
     }
 
@@ -110,17 +111,23 @@ class MultipleModeViewModel: BaseViewModel() {
                         roomAction = mapToRoomAction(data)
                         GameLog.i("checkRoomAction() --> roomAction = ${Gson().toJson(roomAction)}")
 
-                        //遊戲準備開始
-                        if (roomAction.status == 0 && !roomAction.player2.isNullOrEmpty()){
+                        //等待對手
+                        if (roomAction.status == 0 && roomAction.player2.isNullOrEmpty()){
                             val opponent = if (character == HOST) roomAction.player2 else roomAction.host
                             val roomName = if (character == HOST) roomAction.roomName + Util.getString(R.string.desc_host) else roomAction.roomName
                             setRoomInfoLiveData.value = Pair(roomName, opponent)
 
+                            showStartGameBtnLiveDta.value = false
+                            isShowWaitingDialog.value = true
+
                             //顯示「開始對弈」
-                            if (character == HOST) {
-                                isShowWaitingDialog.value = false
-                                showStartGameBtnLiveDta.value = true
-                            }
+                        } else if (roomAction.status == 0 && !roomAction.player2.isNullOrEmpty() && character == HOST){
+                            val opponent = roomAction.player2
+                            val roomName = roomAction.roomName + Util.getString(R.string.desc_host)
+                            setRoomInfoLiveData.value = Pair(roomName, opponent)
+
+                            isShowWaitingDialog.value = false
+                            showStartGameBtnLiveDta.value = true
 
                             //倒數10秒
                         } else if (roomAction.status == 2){
@@ -131,6 +138,10 @@ class MultipleModeViewModel: BaseViewModel() {
                             updateBackBtnStyleLiveData.value = Pair(R.drawable.bg_grey_radius10, Util.getString(R.string.back))
                             gameStartCountDown()
 
+                            //對手放棄遊戲
+                        } else if (roomAction.status == 4 && roomAction.player2.isNullOrEmpty()){
+                            showLeftRoomDialogLiveData.value = Util.getString(R.string.no_opponent)
+
                             //開始遊戲
                         } else if (roomAction.status == 4){
                             checkWhoTurn()
@@ -139,12 +150,10 @@ class MultipleModeViewModel: BaseViewModel() {
                         }
 
                     } else {
-                        GameLog.i("找不到相對應的roomId資料")
                         showAlertDialogLiveData.value = Util.getString(R.string.get_some_mistake)
                     }
 
                 } else {
-                    GameLog.i("找不到相對應的roomId資料")
                     showAlertDialogLiveData.value = Util.getString(R.string.get_some_mistake)
                 }
             }
@@ -206,12 +215,7 @@ class MultipleModeViewModel: BaseViewModel() {
     }
 
     private fun updateChessBoard(chessCollection: ChessCollection) {
-        if (chessCollection.whoPress == 0 && character == HOST || chessCollection.whoPress == 1 && character == PLAYER2){
-            GameLog.i("不更新")
-
-        } else if (chessCollection.whoPress == 0 && character == PLAYER2 || chessCollection.whoPress == 1 && character == HOST){
-            GameLog.i("----------------------------------------------")
-            GameLog.i("開始更新")
+        if (chessCollection.whoPress == 0 && character == PLAYER2 || chessCollection.whoPress == 1 && character == HOST){
             updateChessBoard.value = Pair(chessCollection, myChessColor != BLACK)
         }
     }
@@ -265,8 +269,6 @@ class MultipleModeViewModel: BaseViewModel() {
             override fun onFinish() {
                 if (roomAction.whoTurn == 0 && character == HOST || roomAction.whoTurn == 1 && character == PLAYER2){
                     autoPlaceChessLiveData.value = true
-                } else {
-                    GameLog.i("不是輪到我方, 不需自動下棋")
                 }
             }
         }
@@ -290,13 +292,18 @@ class MultipleModeViewModel: BaseViewModel() {
         }
     }
 
-    fun sentChessLocation(blackChess: Boolean, x: Long, y: Long) {
-        GameLog.i("blackChess = $blackChess, roomAction.whoTurn = ${roomAction.whoTurn}")
-
+    fun sentChessLocation(x: Long, y: Long) {
         val whoPress = if (character == HOST) 0.toLong() else 1.toLong()
         val actions = Actions(5, x, y, whoPress, roomAction.roomId)
         sentActionNotification(actions){
             GameLog.i("座標更新完成")
+        }
+    }
+
+    fun leftRoom(){
+        val actions = Actions(6, if (character == HOST) 0 else 1, roomAction.roomId)
+        sentActionNotification(actions){
+            backToPreviousPageLiveData.value = true
         }
     }
 }

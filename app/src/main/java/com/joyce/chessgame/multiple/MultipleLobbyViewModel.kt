@@ -165,7 +165,6 @@ class MultipleLobbyViewModel: BaseViewModel() {
                 }
             }
 
-            //TODO: 如果回的DATA是空的? --- 無房間
             GameLog.i("roomsArray = ${Gson().toJson(roomsArray)}")
             if (roomsArray.isEmpty()){
                 emptyRoomLiveData.value = true

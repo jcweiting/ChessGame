@@ -10,6 +10,7 @@ class Actions{
     var x: Long? = null
     var y: Long? = null
     var whoPress: Long? = null
+    var whoLeave: Long? = null
 
     /**創建房間*/
     constructor(actionType: Long? = null, host: String? = null, time: Long? = null, roomName: String? = null){
@@ -38,6 +39,13 @@ class Actions{
         this.x = x
         this.y = y
         this.whoPress = whoPress
+        this.roomId = roomId
+    }
+
+    /**離開房間*/
+    constructor(actionType: Long? = null, whoLeave: Long? = null, roomId: String? = null){
+        this.actionType = actionType
+        this.whoLeave = whoLeave
         this.roomId = roomId
     }
 }

@@ -101,7 +101,7 @@ class MultipleModeActivity : BaseActivity() {
 
         //顯示開始對弈按鈕
         viewModel.showStartGameBtnLiveDta.observe(this){
-            isShowGameStart(true)
+            isShowGameStart(it)
         }
 
         //房間資訊
@@ -113,7 +113,7 @@ class MultipleModeActivity : BaseActivity() {
         //放棄遊戲
         viewModel.giveUpGameAlertLiveData.observe(this){
             showAlertDialogWithNegative(this, getString(R.string.error), getString(R.string.sure_to_quit), true, getString(R.string.confirm), getString(R.string.cancel)){
-                viewModel.isQuitGame(it)
+                viewModel.leftRoom()
             }
         }
 
@@ -129,6 +129,12 @@ class MultipleModeActivity : BaseActivity() {
 
         viewModel.showAlertDialogLiveData.observe(this){
             showAlertDialog(this, getString(R.string.error), it)
+        }
+
+        viewModel.showLeftRoomDialogLiveData.observe(this){
+            showAlertDialogWithNegative(this, null, it, false, getString(R.string.confirm), ""){
+                finish()
+            }
         }
 
         viewModel.backToPreviousPageLiveData.observe(this){
@@ -173,8 +179,8 @@ class MultipleModeActivity : BaseActivity() {
         })
 
         binding.multipleGameBoard.setMultipleModeListener(object : GameBoard.OnMultipleModeListener{
-            override fun onChessLocation(isBlackChess: Boolean, x: Long, y: Long) {
-                viewModel.sentChessLocation(isBlackChess, x, y)
+            override fun onChessLocation(x: Long, y: Long) {
+                viewModel.sentChessLocation(x, y)
             }
         })
     }
@@ -242,7 +248,10 @@ class MultipleModeActivity : BaseActivity() {
                 isShowMask(true, R.color.mask_multiple)
                 binding.cnsGameStart.visibility = View.VISIBLE
             }
-            false -> binding.cnsGameStart.visibility = View.GONE
+            false -> {
+                isShowMask(false, R.color.mask_multiple)
+                binding.cnsGameStart.visibility = View.GONE
+            }
         }
     }
 

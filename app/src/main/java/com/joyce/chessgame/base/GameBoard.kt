@@ -272,17 +272,13 @@ class GameBoard: View {
     /**放置旗棋子*/
     private fun placeStone(point: ChessPoint) {
         GameLog.i("棋子座標 = ${Gson().toJson(point)}")
-        GameLog.i("modeType = $modeType, isMyTurn = $isMyTurn, point.isBlackChess = ${point.isBlackChess}")
 
         //將棋子座標加到列表中
         mStonesArr.add(point)
-        GameLog.i("棋子座標Arr mStonesArr = ${Gson().toJson(mStonesArr)}")
 
         //將座標傳遞給SERVER
         if (modeType == MULTIPLE && isMyTurn){
-            GameLog.i("----------------------------------------------")
-            GameLog.i("是我方下棋, 要上傳座標")
-            multipleListener?.onChessLocation(isBlackChess, getChessXLocation(point.centerX),getChessYLocation(point.centerY))
+            multipleListener?.onChessLocation(getChessXLocation(point.centerX),getChessYLocation(point.centerY))
         }
 
         if (checkConnectInLine()){
@@ -326,7 +322,6 @@ class GameBoard: View {
             screenWidth / gameBoardCells * chessCollection.x,
             screenHeight / gameBoardCells * chessCollection.y)
 
-        GameLog.i("更新棋盤 XY = ${chessCollection.x}-${chessCollection.y} chessCollection = ${Gson().toJson(chessCollection)}")
         GameLog.i("更新棋盤 chessLocation = ${Gson().toJson(chessLocation)}")
         placeStone(chessLocation)
     }
@@ -618,6 +613,6 @@ class GameBoard: View {
     }
 
     interface OnMultipleModeListener{
-        fun onChessLocation(isBlackChess: Boolean, x: Long, y: Long)
+        fun onChessLocation(x: Long, y: Long)
     }
 }
