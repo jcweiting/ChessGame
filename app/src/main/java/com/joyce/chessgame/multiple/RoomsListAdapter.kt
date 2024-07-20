@@ -43,24 +43,28 @@ class RoomsListAdapter: RecyclerView.Adapter<RoomsListAdapter.ViewHolder>() {
 
         tvTitle.text = Util.getString(R.string.room_title) + gameRoomData.roomName
 
-        if (gameRoomData.player2.isNullOrBlank()){
-            tvPeople.text = Util.getString(R.string.current_people) + "1"
-        } else {
-            tvPeople.text = Util.getString(R.string.current_people) + "2"
-        }
+        val currentPerson = if (gameRoomData.player2.isNullOrBlank()||gameRoomData.host.isNullOrBlank()) 1 else 2
+        tvPeople.text = Util.getString(R.string.current_people) + currentPerson
 
-        when (gameRoomData.status) {
-            0 -> {
-                tvStatus.text = Util.getString(R.string.waiting)
-                root.setBackgroundResource(R.drawable.bg_rooms_active)
-            }
-            2 -> tvStatus.text = Util.getString(R.string.heading_to_game_board)
-            4 -> tvStatus.text = Util.getString(R.string.gaming)
+        if (gameRoomData.status == 0 && currentPerson < 2){
+            tvStatus.text = Util.getString(R.string.waiting)
+            root.setBackgroundResource(R.drawable.bg_rooms_active)
+
+        } else if (gameRoomData.status == 2 && currentPerson == 2){
+            tvStatus.text = Util.getString(R.string.heading_to_game_board)
+
+        } else if (gameRoomData.status == 4 && currentPerson == 2){
+            tvStatus.text = Util.getString(R.string.gaming)
+
+        } else {
+            tvStatus.text = Util.getString(R.string.gaming)
         }
 
         root.setOnClickListener {
-            gameRoomData.roomId?.let {
-                listener?.onClickToAddRooms(it)
+            if (gameRoomData.status == 0 && currentPerson < 2){
+                gameRoomData.roomId?.let {
+                    listener?.onClickToAddRooms(it)
+                }
             }
         }
     }

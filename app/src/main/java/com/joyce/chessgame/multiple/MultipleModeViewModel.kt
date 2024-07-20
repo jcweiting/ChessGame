@@ -35,6 +35,7 @@ class MultipleModeViewModel: BaseViewModel() {
     var isShowWaitingDialog = MutableLiveData<Boolean>()
     var updateBackBtnStyleLiveData = MutableLiveData<Pair<Int, String>>()
     var updateChessBoard = MutableLiveData<Pair<ChessCollection, Boolean>>()
+    var isShowedMaskLiveData = MutableLiveData<Boolean>()
     private val db = Firebase.firestore
     private var isEnableTvBack = true
     private var roomAction = RoomAction()
@@ -55,7 +56,6 @@ class MultipleModeViewModel: BaseViewModel() {
 
     fun sentGameStartToServer(roomId: String?) {
         if (roomAction.player2.isNullOrBlank()){
-            GameLog.i("點選開始對弈, 但player2是空的")
             showAlertDialogLiveData.value = Util.getString(R.string.try_later)
             leftRoom()
             return
@@ -120,26 +120,42 @@ class MultipleModeViewModel: BaseViewModel() {
                             showStartGameBtnLiveDta.value = false
                             isShowWaitingDialog.value = true
 
-                            //顯示「開始對弈」
-                        } else if (roomAction.status == 0 && !roomAction.player2.isNullOrEmpty() && character == HOST){
-                            val opponent = roomAction.player2
-                            val roomName = roomAction.roomName + Util.getString(R.string.desc_host)
-                            setRoomInfoLiveData.value = Pair(roomName, opponent)
+                            //顯示房間資訊&開始對弈
+                        } else if (roomAction.status == 0 && !roomAction.player2.isNullOrEmpty()){
+                            when(character){
+                                HOST -> {
+                                    val opponent = roomAction.player2
+                                    val roomName = roomAction.roomName + Util.getString(R.string.desc_host)
+                                    setRoomInfoLiveData.value = Pair(roomName, opponent)
 
-                            isShowWaitingDialog.value = false
-                            showStartGameBtnLiveDta.value = true
+                                    isShowWaitingDialog.value = false
+                                    showStartGameBtnLiveDta.value = true
+                                }
+
+                                PLAYER2 -> {
+                                    val opponent = roomAction.host
+                                    val roomName = roomAction.roomName
+                                    setRoomInfoLiveData.value = Pair(roomName, opponent)
+                                }
+                            }
+
+                            //房主離開房間
+                        } else if (roomAction.status == 0 && roomAction.host.isNullOrEmpty()){
+                            showLeftRoomDialogLiveData.value = Util.getString(R.string.no_opponent)
 
                             //倒數10秒
                         } else if (roomAction.status == 2){
                             if (character == PLAYER2) {
                                 isShowWaitingDialog.value = false
                             }
+
                             isEnableTvBack = false
+                            isShowedMaskLiveData.value = true
                             updateBackBtnStyleLiveData.value = Pair(R.drawable.bg_grey_radius10, Util.getString(R.string.back))
                             gameStartCountDown()
 
                             //對手放棄遊戲
-                        } else if (roomAction.status == 4 && roomAction.player2.isNullOrEmpty()){
+                        } else if (roomAction.status == 4 && (roomAction.player2.isNullOrEmpty() || roomAction.host.isNullOrEmpty()) ){
                             showLeftRoomDialogLiveData.value = Util.getString(R.string.no_opponent)
 
                             //開始遊戲

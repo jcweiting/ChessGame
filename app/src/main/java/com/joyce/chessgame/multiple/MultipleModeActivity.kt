@@ -8,6 +8,7 @@ import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.GlobalConfig.Companion.CHARACTER
 import com.joyce.chessgame.GlobalConfig.Companion.MULTIPLE
 import com.joyce.chessgame.GlobalConfig.Companion.ROOM_ID
@@ -76,9 +77,12 @@ class MultipleModeActivity : BaseActivity() {
 
         //Btn Style
         viewModel.updateBackBtnStyleLiveData.observe(this){
-            isShowMask(true, R.color.mask_multiple)
             binding.tvBack.setBackgroundResource(it.first)
             binding.tvBack.text = it.second
+        }
+
+        viewModel.isShowedMaskLiveData.observe(this){
+            isShowMask(true, R.color.mask_multiple)
         }
 
         //遊戲開始倒數
@@ -133,7 +137,7 @@ class MultipleModeActivity : BaseActivity() {
 
         viewModel.showLeftRoomDialogLiveData.observe(this){
             showAlertDialogWithNegative(this, null, it, false, getString(R.string.confirm), ""){
-                finish()
+                viewModel.leftRoom()
             }
         }
 
@@ -166,7 +170,6 @@ class MultipleModeActivity : BaseActivity() {
         binding.multipleGameBoard.setGameBoardListener(object : GameBoard.OnGameBoardListener{
             override fun onChangePlayer(isBlackChess: Boolean) {
                 initPlayerStyle()
-                isShowMask(true, android.R.color.transparent)
             }
 
             override fun onConnectInLine(isBlackChess: Boolean) {
@@ -268,8 +271,6 @@ class MultipleModeActivity : BaseActivity() {
         Handler().postDelayed({
             binding.tvFirstMove.startAnimation(fadeOutAnimation)
             binding.tvFirstMove.visibility = TextView.GONE
-
-            isShowMask(false, R.color.mask_multiple)
             viewModel.startCountDownTimer()
         },1000)
     }
