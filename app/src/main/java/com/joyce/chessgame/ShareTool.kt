@@ -1,5 +1,6 @@
 package com.joyce.chessgame
 
+import android.annotation.SuppressLint
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -11,6 +12,7 @@ import com.joyce.chessgame.base.UserData
 object ShareTool {
 
     private const val USER_DATA = "userData"
+    private const val BG_MUSIC = "bgMusic"
 
     private fun getShare(): SharedPreferences {
         return MyApplication.instance.applicationContext.getSharedPreferences("SaveName", MODE_PRIVATE)
@@ -40,5 +42,13 @@ object ShareTool {
         } else {
             UserData()
         }
+    }
+
+    fun saveMusicSetting(isTurnOn: Boolean){
+        getShare().edit().putBoolean(BG_MUSIC, isTurnOn).apply()
+    }
+
+    fun getMusicSetting(): Boolean{
+        return getShare().getBoolean(BG_MUSIC, false)
     }
 }

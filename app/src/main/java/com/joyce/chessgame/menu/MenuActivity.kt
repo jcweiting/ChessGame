@@ -10,6 +10,7 @@ import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityMenuBinding
 import com.joyce.chessgame.multiple.MultipleLobbyActivity
 import com.joyce.chessgame.offline.OfflineModeActivity
+import com.joyce.chessgame.setting.SettingActivity
 
 class MenuActivity : BaseActivity() {
 
@@ -40,7 +41,7 @@ class MenuActivity : BaseActivity() {
 
         //設定
         binding.cnsSetting.setOnClickListener {
-            //TODO: 設定
+            startActivity(Intent(this, SettingActivity::class.java))
         }
 
         //離開
