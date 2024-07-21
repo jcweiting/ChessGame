@@ -29,6 +29,7 @@ class ServerRepository {
         const val HOST = 0L
         const val USER2 = 1L
         const val LEAVE_ROOM = 6L
+        const val MATCH_RESULT = 7L
     }
     private val roomsList = ArrayList<GameRoomData>()
     private lateinit var onCatchDataFromDataBaseListener: OnCatchDataFromDataBaseListener
@@ -103,6 +104,10 @@ class ServerRepository {
                     var y = 0L
                     var whoPress = 0L
                     var whoLeave = 0L
+                    var whoWin = ""
+                    document.getString("who_win")?.let { win->
+                        whoWin = win
+                    }
                     document.getLong("whoLeave")?.let { who->
                         whoLeave = who
                     }
@@ -133,7 +138,7 @@ class ServerRepository {
                     document.getLong("timeStamp")?.let { serverTimeStamp ->
                         time = serverTimeStamp
                     }
-                    val actionData = ActionData(actionType, host, time,roomId,document.id,roomName,player2,x,y,whoPress,whoLeave)
+                    val actionData = ActionData(actionType, host, time,roomId,document.id,roomName,player2,x,y,whoPress,whoLeave,whoWin)
                     actionsList.add(actionData)
                 }
                 for (action in actionsList){
@@ -152,8 +157,20 @@ class ServerRepository {
                     if (action.actionType == LEAVE_ROOM){
                         handleLeaveRoom(action)
                     }
+                    if (action.actionType == MATCH_RESULT){
+                        handleMatchResult(action)
+                    }
+
                 }
             }
+    }
+
+    private fun handleMatchResult(action: ActionData) {
+        db.collection("Room_Action").document(action.roomId)
+            .update("who_win",action.whoWin)
+        onCatchDataFromDataBaseListener.onShowLog("${action.roomId} 對弈完成 勝者 : ${if (action.whoWin == "0") "房主" else "用戶2"}")
+        clearActionData(action.documentId)
+
     }
 
     private fun handleLeaveRoom(action: ActionData) {
@@ -161,11 +178,19 @@ class ServerRepository {
         for (room in roomsList){
             if (room.roomId == action.roomId){
                 documentId = room.documentId
+
                 break
             }
         }
+        if (documentId.isEmpty()){
+            return
+        }
+        db.collection("Room_Action").document(action.roomId)
+            .update((if (action.whoLeave == 0L) "host" else "player2"),"")
+
         db.collection("Rooms").document(documentId)
-            .update((if (action.whoLeave == 0L) "host" else "user2"),"")
+            .update((if (action.whoLeave == 0L) "host" else "player2"),"")
+        clearActionData(action.documentId)
     }
 
     private fun handlePressChess(action: ActionData) {
