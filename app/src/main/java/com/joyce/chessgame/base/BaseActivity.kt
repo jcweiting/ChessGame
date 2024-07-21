@@ -1,9 +1,13 @@
 package com.joyce.chessgame.base
 
+import android.media.MediaPlayer
+import android.os.Bundle
+import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
+import com.joyce.chessgame.R
 import com.joyce.chessgame.ShareTool
 import com.joyce.chessgame.login.LoginActivity
 import kotlin.system.exitProcess
@@ -12,13 +16,20 @@ open class BaseActivity: AppCompatActivity() {
 
     private var db = FirebaseFirestore.getInstance()
     private var userData = UserData()
+    private lateinit var soundEffectPlayer: MediaPlayer
+    private var isTurnOnSoundEffect = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        soundEffectPlayer = MediaPlayer.create(this, R.raw.sound_effect)
+        soundEffectPlayer.isLooping = false
+    }
 
     override fun onResume() {
         super.onResume()
         userData = ShareTool.getUserData()
 
         if (this !is LoginActivity){
-            GameLog.user("非LoginActivity的base的onResume")
             if (!userData.email.isNullOrBlank()){
                 userData.active = true
                 addUserData(userData, "from onResume"){}
@@ -85,4 +96,16 @@ open class BaseActivity: AppCompatActivity() {
         }
     }
 
+    fun inTurnOnSoundEffect(isTurnOn: Boolean){
+        when(isTurnOn){
+            true -> {
+                soundEffectPlayer.start()
+            }
+            false -> {
+                soundEffectPlayer.pause()
+                soundEffectPlayer.seekTo(0)
+            }
+        }
+        isTurnOnSoundEffect = isTurnOn
+    }
 }

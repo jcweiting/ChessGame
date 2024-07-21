@@ -13,6 +13,7 @@ import com.joyce.chessgame.GlobalConfig.Companion.CHARACTER
 import com.joyce.chessgame.GlobalConfig.Companion.MULTIPLE
 import com.joyce.chessgame.GlobalConfig.Companion.ROOM_ID
 import com.joyce.chessgame.R
+import com.joyce.chessgame.ShareTool
 import com.joyce.chessgame.Util.showAlertDialog
 import com.joyce.chessgame.Util.showAlertDialogWithNegative
 import com.joyce.chessgame.base.BaseActivity
@@ -82,7 +83,7 @@ class MultipleModeActivity : BaseActivity() {
         }
 
         viewModel.isShowedMaskLiveData.observe(this){
-            isShowMask(true, R.color.mask_multiple)
+            isShowMask(1,true, R.color.mask_multiple)
         }
 
         //遊戲開始倒數
@@ -145,8 +146,8 @@ class MultipleModeActivity : BaseActivity() {
             finish()
         }
 
-        viewModel.showWinnerLiveData.observe(this){
-            showWinnerView(it)
+        viewModel.isWinnerLiveData.observe(this){
+            showWinnerView(it.first, it.second)
         }
     }
 
@@ -173,11 +174,15 @@ class MultipleModeActivity : BaseActivity() {
             }
 
             override fun onConnectInLine(isBlackChess: Boolean) {
-                viewModel.gameEnd(isBlackChess, binding.tvMultipleMe.text.toString(), binding.tvMultipleOther.text.toString())
+                viewModel.sentResult()
             }
 
             override fun onStartCountDown() {
                 viewModel.startCountDownTimer()
+            }
+
+            override fun turnOnSoundEffect() {
+                inTurnOnSoundEffect(ShareTool.getSoundEffect())
             }
         })
 
@@ -185,13 +190,17 @@ class MultipleModeActivity : BaseActivity() {
             override fun onChessLocation(x: Long, y: Long) {
                 viewModel.sentChessLocation(x, y)
             }
+
+            override fun isShowMask(isShow: Boolean) {
+                isShowMask(9,isShow, android.R.color.transparent)
+            }
         })
     }
 
     private fun updateMyTextStyle(isMyTurn: Boolean){
         when(isMyTurn){
             true -> {
-                isShowMask(false, android.R.color.transparent)
+                isShowMask(2,false, android.R.color.transparent)
 
                 binding.tvMultipleMe.setBackgroundResource(R.drawable.bg_player_active)
                 binding.imMultipleFlagMe.visibility = View.VISIBLE
@@ -202,7 +211,7 @@ class MultipleModeActivity : BaseActivity() {
                 binding.tvCountDownOpposite.visibility = View.GONE
             }
             false -> {
-                isShowMask(true, android.R.color.transparent)
+                isShowMask(3,true, android.R.color.transparent)
 
                 binding.tvMultipleMe.setBackgroundResource(R.drawable.bg_player_inactive)
                 binding.imMultipleFlagMe.visibility = View.GONE
@@ -224,7 +233,8 @@ class MultipleModeActivity : BaseActivity() {
         binding.tvCountDownOpposite.visibility = View.GONE
     }
 
-    private fun isShowMask(isShow: Boolean, color: Int){
+    private fun isShowMask(from: Int, isShow: Boolean, color: Int){
+        GameLog.i("isShowMask = $isShow, from = $from")
         binding.maskMultipleWaiting.setBackgroundResource(color)
         when(isShow){
             true -> binding.maskMultipleWaiting.visibility = View.VISIBLE
@@ -235,11 +245,11 @@ class MultipleModeActivity : BaseActivity() {
     private fun isShowWaitingDialog(isShow: Boolean){
         when(isShow){
             true -> {
-                isShowMask(true, R.color.mask_multiple)
+                isShowMask(4,true, R.color.mask_multiple)
                 binding.cnsWaiting.visibility = View.VISIBLE
             }
             false -> {
-                isShowMask(false, R.color.mask_multiple)
+                isShowMask(5,false, R.color.mask_multiple)
                 binding.cnsWaiting.visibility = View.GONE
             }
         }
@@ -248,11 +258,11 @@ class MultipleModeActivity : BaseActivity() {
     private fun isShowGameStart(isShow: Boolean){
         when(isShow){
             true -> {
-                isShowMask(true, R.color.mask_multiple)
+                isShowMask(6,true, R.color.mask_multiple)
                 binding.cnsGameStart.visibility = View.VISIBLE
             }
             false -> {
-                isShowMask(false, R.color.mask_multiple)
+                isShowMask(7,false, R.color.mask_multiple)
                 binding.cnsGameStart.visibility = View.GONE
             }
         }
@@ -275,17 +285,18 @@ class MultipleModeActivity : BaseActivity() {
         },1000)
     }
 
-    private fun showWinnerView(winner: String){
-        binding.tvCountDownMe.visibility = View.GONE
-        binding.tvCountDownOpposite.visibility = View.GONE
+    private fun showWinnerView(isWinner: Boolean, content: String){
+        isShowMask(8,true, R.color.mask_multiple)
+        initPlayerStyle()
 
         binding.tvMultipleWin.visibility = View.VISIBLE
+        binding.tvMultipleWin.text = content
         binding.imMultipleWin.visibility = View.VISIBLE
-        binding.tvMultipleWin.text = winner
-    }
 
-    private fun hideWinnerView(){
-        binding.tvMultipleWin.visibility = View.GONE
-        binding.imMultipleWin.visibility = View.GONE
+        if (isWinner){
+            binding.imMultipleWin.setImageResource(R.drawable.bg_win)
+        } else {
+            binding.imMultipleWin.setImageResource(R.drawable.ic_lose)
+        }
     }
 }

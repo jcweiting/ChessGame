@@ -31,7 +31,7 @@ class MultipleModeViewModel: BaseViewModel() {
     var setTextLiveData = MutableLiveData<Pair<String, String>>()
     var whoFirstLiveData = MutableLiveData<String>()
     var autoPlaceChessLiveData = MutableLiveData<Boolean>()
-    var showWinnerLiveData = MutableLiveData<String>()
+    var isWinnerLiveData = MutableLiveData<Pair<Boolean, String>>()
     var isShowWaitingDialog = MutableLiveData<Boolean>()
     var updateBackBtnStyleLiveData = MutableLiveData<Pair<Int, String>>()
     var updateChessBoard = MutableLiveData<Pair<ChessCollection, Boolean>>()
@@ -79,10 +79,13 @@ class MultipleModeViewModel: BaseViewModel() {
 
     /**確認按鈕目前狀態*/
     fun checkButtonType(buttonContent: String) {
-        if (isEnableTvBack && buttonContent == Util.getString(R.string.back)){
+        GameLog.i("按鈕狀態 isEnableTvBack = $isEnableTvBack")
+        if (!isEnableTvBack) return
+
+        if (buttonContent == Util.getString(R.string.back)){
             leftRoom()
 
-        } else if (buttonContent == Util.getString(R.string.give_up)){
+        }  else if (buttonContent == Util.getString(R.string.give_up)){
             giveUpGameAlertLiveData.value = true
         }
     }
@@ -111,8 +114,30 @@ class MultipleModeViewModel: BaseViewModel() {
                         roomAction = mapToRoomAction(data)
                         GameLog.i("checkRoomAction() --> roomAction = ${Gson().toJson(roomAction)}")
 
-                        //等待對手
-                        if (roomAction.status == 0 && roomAction.player2.isNullOrEmpty()){
+                        //房主贏
+                        if (roomAction.whoWin == "0"){
+                            countDownTimer?.cancel()
+                            updateBackBtnStyleLiveData.value = Pair(R.drawable.bg_brown1_radius10, Util.getString(R.string.back_to_lobby))
+
+                            if (character == HOST){
+                                isWinnerLiveData.value = Pair(true, Util.getString(R.string.you_win))
+                            } else {
+                                isWinnerLiveData.value = Pair(false, Util.getString(R.string.you_lose))
+                            }
+
+                            //player2贏
+                        } else if (roomAction.whoWin == "1"){
+                            countDownTimer?.cancel()
+                            updateBackBtnStyleLiveData.value = Pair(R.drawable.bg_brown1_radius10, Util.getString(R.string.back_to_lobby))
+
+                            if (character == HOST){
+                                isWinnerLiveData.value = Pair(false, Util.getString(R.string.you_lose))
+                            } else {
+                                isWinnerLiveData.value = Pair(true, Util.getString(R.string.you_win))
+                            }
+
+                            //等待對手
+                        } else if (roomAction.status == 0 && roomAction.player2.isNullOrEmpty()){
                             val opponent = if (character == HOST) roomAction.player2 else roomAction.host
                             val roomName = if (character == HOST) roomAction.roomName + Util.getString(R.string.desc_host) else roomAction.roomName
                             setRoomInfoLiveData.value = Pair(roomName, opponent)
@@ -188,7 +213,8 @@ class MultipleModeViewModel: BaseViewModel() {
             second = ((data["second"] as? Long)?.toInt()?:0),
             status = (data["status"] as? Long)?.toInt()?:0,
             whoFirst = (data["who_first"] as? Long)?.toInt()?:0,
-            whoTurn = (data["who_turn"] as? Long)?.toInt()?:0
+            whoTurn = (data["who_turn"] as? Long)?.toInt()?:0,
+            whoWin = data["who_win"] as String?
         )
     }
 
@@ -291,23 +317,6 @@ class MultipleModeViewModel: BaseViewModel() {
         countDownTimer?.start()
     }
 
-    fun gameEnd(blackChess: Boolean, mySide: String, player2Side: String) {
-        countDownTimer?.cancel()
-        if (blackChess){
-            if (roomAction.whoFirst == 0){
-                showWinnerLiveData.value = mySide
-            } else {
-                showWinnerLiveData.value = player2Side
-            }
-        } else {
-            if (roomAction.whoFirst == 0){
-                showWinnerLiveData.value = mySide
-            } else {
-                showWinnerLiveData.value = player2Side
-            }
-        }
-    }
-
     fun sentChessLocation(x: Long, y: Long) {
         val whoPress = if (character == HOST) 0.toLong() else 1.toLong()
         val actions = Actions(5, x, y, whoPress, roomAction.roomId)
@@ -320,6 +329,14 @@ class MultipleModeViewModel: BaseViewModel() {
         val actions = Actions(6, if (character == HOST) 0 else 1, roomAction.roomId)
         sentActionNotification(actions){
             backToPreviousPageLiveData.value = true
+        }
+    }
+
+    fun sentResult() {
+        val whoWin = if (character == HOST) "0" else "1"
+        val actions = Actions(7, roomAction.roomId, who_win = whoWin)
+        sentActionNotification(actions){
+            GameLog.i("已成功通知對弈結果")
         }
     }
 }

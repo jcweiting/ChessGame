@@ -56,4 +56,8 @@
     <string name="desc_host">(房主)</string>
     <string name="no_opponent">對手已退出遊戲</string>
     <string name="switch_music">開啟背景音樂</string>
+    <string name="switch_sound">開啟音效</string>
+    <string name="you_win">You Win!</string>
+    <string name="back_to_lobby">返回大廳</string>
+    <string name="you_lose">You\nlost\n:(</string>
 </resources>

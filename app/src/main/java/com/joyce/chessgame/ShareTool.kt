@@ -13,6 +13,7 @@ object ShareTool {
 
     private const val USER_DATA = "userData"
     private const val BG_MUSIC = "bgMusic"
+    private const val SOUND_EFFECT = "soundEffect"
 
     private fun getShare(): SharedPreferences {
         return MyApplication.instance.applicationContext.getSharedPreferences("SaveName", MODE_PRIVATE)
@@ -50,5 +51,13 @@ object ShareTool {
 
     fun getMusicSetting(): Boolean{
         return getShare().getBoolean(BG_MUSIC, false)
+    }
+
+    fun saveSoundEffect(isTurnOn: Boolean){
+        getShare().edit().putBoolean(SOUND_EFFECT, isTurnOn).apply()
+    }
+
+    fun getSoundEffect(): Boolean{
+        return getShare().getBoolean(SOUND_EFFECT, false)
     }
 }

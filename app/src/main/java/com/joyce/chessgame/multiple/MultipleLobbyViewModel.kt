@@ -76,11 +76,13 @@ class MultipleLobbyViewModel: BaseViewModel() {
 
     /**加入房間*/
     fun addAvailableRoom(roomId: String){
-        val actions = Actions(3, roomId, ShareTool.getUserData().email)
-        sentActionNotification(actions){
-            GameLog.i("成功加入房間 roomId = $roomId")
-            isShowProgressBarLiveData.value = false
-            isSuccessAddRoomLiveData.value = roomId
+        ShareTool.getUserData().email?.let {
+            val actions = Actions(3, roomId, player2 = it)
+            sentActionNotification(actions){
+                GameLog.i("成功加入房間 roomId = $roomId")
+                isShowProgressBarLiveData.value = false
+                isSuccessAddRoomLiveData.value = roomId
+            }
         }
     }
 

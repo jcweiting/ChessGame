@@ -8,6 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.joyce.chessgame.GlobalConfig.Companion.OFFLINE
 import com.joyce.chessgame.R
+import com.joyce.chessgame.ShareTool
 import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.base.GameBoard
 import com.joyce.chessgame.databinding.ActivityOfflineModeBinding
@@ -66,6 +67,10 @@ class OfflineModeActivity : BaseActivity() {
 
             override fun onStartCountDown() {
                 startCountDownTimer()
+            }
+
+            override fun turnOnSoundEffect() {
+                inTurnOnSoundEffect(ShareTool.getSoundEffect())
             }
         })
     }

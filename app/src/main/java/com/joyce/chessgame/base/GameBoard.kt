@@ -12,6 +12,8 @@ import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import com.joyce.chessgame.GameLog
 import com.joyce.chessgame.GlobalConfig.Companion.MULTIPLE
+import com.joyce.chessgame.GlobalConfig.Companion.SINGLE
+import com.joyce.chessgame.MyApplication
 import com.joyce.chessgame.R
 import com.joyce.chessgame.multiple.ChessCollection
 import kotlin.math.abs
@@ -272,6 +274,8 @@ class GameBoard: View {
     /**放置旗棋子*/
     private fun placeStone(point: ChessPoint) {
         GameLog.i("棋子座標 = ${Gson().toJson(point)}")
+        listener?.turnOnSoundEffect()
+        multipleListener?.isShowMask(true)
 
         //將棋子座標加到列表中
         mStonesArr.add(point)
@@ -282,7 +286,9 @@ class GameBoard: View {
         }
 
         if (checkConnectInLine()){
-            listener?.onConnectInLine(isBlackChess)
+            if (modeType == MULTIPLE && isMyTurn || modeType == SINGLE){
+                listener?.onConnectInLine(isBlackChess)
+            }
         } else {
             updateGameBoard()
         }
@@ -356,6 +362,7 @@ class GameBoard: View {
             false -> whiteInLine = if (whiteChessArr.size < 5) false else isChessArrConnectInLine(whiteChessArr)
         }
 
+        invalidate()
         return blackInLine || whiteInLine
     }
 
@@ -610,9 +617,11 @@ class GameBoard: View {
         fun onChangePlayer(isBlackChess: Boolean)
         fun onConnectInLine(isBlackChess: Boolean)
         fun onStartCountDown()
+        fun turnOnSoundEffect()
     }
 
     interface OnMultipleModeListener{
         fun onChessLocation(x: Long, y: Long)
+        fun isShowMask(isShow: Boolean)
     }
 }

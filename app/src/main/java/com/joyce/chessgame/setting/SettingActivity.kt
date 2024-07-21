@@ -23,14 +23,22 @@ class SettingActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-
         binding.switchMusic.isChecked = ShareTool.getMusicSetting()
+        binding.switchSound.isChecked = ShareTool.getSoundEffect()
     }
 
     private fun buttonCollection() {
         binding.switchMusic.setOnCheckedChangeListener { _, isChecked ->
             ShareTool.saveMusicSetting(isChecked)
             MyApplication.instance.turnOnBgMusic(isChecked)
+        }
+
+        binding.switchSound.setOnCheckedChangeListener { _, isChecked ->
+            ShareTool.saveSoundEffect(isChecked)
+        }
+
+        binding.tvLogout.setOnClickListener {
+            //TODO: 登出
         }
     }
 }
