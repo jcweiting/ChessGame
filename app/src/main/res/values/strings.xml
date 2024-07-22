@@ -60,4 +60,5 @@
     <string name="you_win">You Win!</string>
     <string name="back_to_lobby">返回大廳</string>
     <string name="you_lose">You\nlost\n:(</string>
+    <string name="failed_logout">登出失敗</string>
 </resources>
