@@ -3,33 +3,20 @@ package com.joyce.chessgame.login
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.facebook.AccessToken
-import com.facebook.CallbackManager
-import com.facebook.FacebookCallback
-import com.facebook.FacebookException
-import com.facebook.GraphRequest
-import com.facebook.login.LoginManager
-import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.joyce.chessgame.GameLog
-import com.joyce.chessgame.GlobalConfig.Companion.FACEBOOK
 import com.joyce.chessgame.GlobalConfig.Companion.GOOGLE
-import com.joyce.chessgame.MyApplication
 import com.joyce.chessgame.R
 import com.joyce.chessgame.base.BaseActivity
 import com.joyce.chessgame.databinding.ActivityLoginBinding
 import com.joyce.chessgame.menu.MenuActivity
-import com.joyce.chessgame.server.ServerActivity
-import org.json.JSONException
 
 class LoginActivity : BaseActivity() {
 
@@ -37,7 +24,6 @@ class LoginActivity : BaseActivity() {
     private lateinit var viewModel: LoginViewModel
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
-    private lateinit var callbackManager: CallbackManager
     private var loginType = ""
 
     companion object{
@@ -68,9 +54,6 @@ class LoginActivity : BaseActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
         auth = FirebaseAuth.getInstance()
-
-        //init callback Manager
-        callbackManager = CallbackManager.Factory.create()
     }
 
     private fun liveDataCollection() {
@@ -93,49 +76,10 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun buttonCollection() {
-        binding.cnsFbLogin.setOnClickListener {
-            viewModel.setIsLoginByBtn(true)
-            fbLogin()
-        }
-
         binding.cnsGoogleLogin.setOnClickListener {
             viewModel.setIsLoginByBtn(true)
             googleSignIn()
         }
-    }
-
-    private fun fbLogin() {
-        LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
-
-        LoginManager.getInstance().registerCallback(callbackManager, object : FacebookCallback<LoginResult>{
-            override fun onCancel() {
-                Toast.makeText(this@LoginActivity, getString(R.string.cancel_login), Toast.LENGTH_LONG).show()
-            }
-
-            override fun onError(error: FacebookException) {
-                GameLog.i("FB Login Failed = ${error.message}")
-                showLoginFailedDialog()
-            }
-
-            override fun onSuccess(result: LoginResult) {
-                GameLog.i("fb login success")
-
-                val accessToken = result.accessToken
-                GraphRequest.newMeRequest(accessToken){`object`, _ ->
-                    try {
-                        val email = `object`?.getString("email")
-                        val name = `object`?.getString("name")
-
-                        loginType = FACEBOOK
-                        newUserData(true, email, loginType)
-
-                    } catch (e: JSONException){
-                        e.printStackTrace()
-                        showLoginFailedDialog()
-                    }
-                }
-            }
-        })
     }
 
     private fun googleSignIn() {
@@ -146,7 +90,6 @@ class LoginActivity : BaseActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         viewModel.checkResponseCode(requestCode, data)
-        callbackManager.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun firebaseAuthWithGoogle(account: GoogleSignInAccount) {

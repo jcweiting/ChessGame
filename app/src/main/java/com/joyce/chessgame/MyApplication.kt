@@ -3,8 +3,6 @@ package com.joyce.chessgame
 import android.app.Application
 import android.content.Context
 import android.media.MediaPlayer
-import com.facebook.FacebookSdk
-import com.facebook.appevents.AppEventsLogger
 
 class MyApplication: Application() {
 
@@ -17,11 +15,8 @@ class MyApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        instance = this
 
-        //Init FB Login
-        FacebookSdk.sdkInitialize(applicationContext)
-        AppEventsLogger.activateApp(this)
+        instance = this
 
         //InitMusic
         mediaPlayer = MediaPlayer.create(this, R.raw.bg_music)

@@ -3,13 +3,10 @@ package com.joyce.chessgame.login
 import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.facebook.AccessToken
-import com.facebook.GraphRequest
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
 import com.joyce.chessgame.GameLog
-import com.joyce.chessgame.GlobalConfig.Companion.FACEBOOK
 import com.joyce.chessgame.GlobalConfig.Companion.GOOGLE
 import com.joyce.chessgame.MyApplication
 
@@ -49,6 +46,7 @@ class LoginViewModel: ViewModel() {
 
     /**是否有自動登入*/
     fun checkAutoLogin() {
+        showProgressBarLiveData.value = true
         if (!isLoginByBtn){
             checkedLoginRecord()
         }
@@ -56,40 +54,16 @@ class LoginViewModel: ViewModel() {
 
     /**確認是否已登入*/
     private fun checkedLoginRecord() {
-        showProgressBarLiveData.value = true
+        GameLog.i("檢查是否已自動登入")
 
-        var isFbLoggedIn = false
-        var isGoogleLoggedIn = false
-
-        //FB
-        val fbToken = AccessToken.getCurrentAccessToken()
-        if (fbToken != null && !fbToken.isExpired){
-            isFbLoggedIn = true
-            GraphRequest.newMeRequest(fbToken){ jsonObject, _ ->
-                val email = jsonObject?.optString("email")
-                email?.let {
-                    isAutoLoginLiveData.value = Pair(it, FACEBOOK)
-                }
-                GameLog.i("FB自動登入，確認Email是否相同 = $email")
+        val googleAcc = GoogleSignIn.getLastSignedInAccount(MyApplication.instance)
+        if (googleAcc != null){
+            GameLog.i("Google自動登入，確認Email是否相同 = ${googleAcc.email}")
+            googleAcc.email?.let {
+                isAutoLoginLiveData.value = Pair(it, GOOGLE)
             }
-        }
-
-        if (!isFbLoggedIn){
-            //google
-            val googleAcc = GoogleSignIn.getLastSignedInAccount(MyApplication.instance)
-            if (googleAcc != null){
-                GameLog.i("Google自動登入，確認Email是否相同 = ${googleAcc.email}")
-                isGoogleLoggedIn = true
-                googleAcc.email?.let {
-                    isAutoLoginLiveData.value = Pair(it, GOOGLE)
-                }
-            }
-        }
-
-        if (!isFbLoggedIn && !isGoogleLoggedIn){
+        } else {
             showProgressBarLiveData.value = false
         }
-
-        GameLog.i("用GOOGLE帳號 = $isGoogleLoggedIn | 用FB帳號 = $isFbLoggedIn")
     }
 }
